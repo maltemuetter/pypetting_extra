@@ -1,3 +1,4 @@
+from .main.tilter import PlateTilter
 from .main.worklist import Worklist
 from .main.experiment import Experiment
 from .main.carrier import Device, Carrier

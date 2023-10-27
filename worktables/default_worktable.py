@@ -1,5 +1,6 @@
-from pypetting_extra import PintoolDryer, PintoolSetup, Robot, Carrier, Pickolo
+from pypetting_extra import PintoolDryer, PintoolSetup, Robot, Carrier, Pickolo, PlateTilter
 from pypetting import Labware, GridSite
+
 
 robot = Robot()
 
@@ -15,6 +16,8 @@ robot.add_carrier("MCA96 3Pos", 15)
 # add devices
 robot.add_incubator(GridSite(grid=68, site=0, carrier="StoreX 22Pos"))
 robot.add_plate_reader(GridSite(grid=51, site=0, carrier="Infinite 200"))
+tilter = PlateTilter("2Pos Tilter",	62)
+robot.add_tilter(tilter)
 
 # pickolo setup
 light_table = Carrier("Pickolo-Light-Table", 46)

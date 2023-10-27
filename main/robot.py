@@ -42,3 +42,6 @@ class Robot:
         self.pickolo = pickolo
         self.roma.add_pickolo(pickolo)
         self.liha.add_pickolo(pickolo)
+
+    def add_tilter(self, tilter):
+        self.tilter = tilter

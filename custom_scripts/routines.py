@@ -1,4 +1,4 @@
-from pypetting_extra import robot
+from pypetting_extra import robot, Experiment
 
 
 def make_photo_of_plate(robot, plate, new_lid_pos, img_path, close_pickolo=True):
@@ -8,11 +8,12 @@ def make_photo_of_plate(robot, plate, new_lid_pos, img_path, close_pickolo=True)
     return WL
 
 
-def make_photos_of_plates(robot, plates, new_lid_pos, img_paths):
+def make_photos_of_plates(robot, plates, new_lid_pos, img_paths, protocol, read=1):
     WL = []
     for plate, img_path in zip(plates, img_paths):
         WL += robot.roma.move_plate_to_photo_position(plate, new_lid_pos)
         WL += robot.liha.take_photo(img_path, close_pickolo=False)
         WL += robot.roma.incubate_plate(plate)
+        WL += [protocol.log_entry(plate.name + "_run"+str(read))]
     WL += robot.pickolo.close()
     return WL
