@@ -4,14 +4,17 @@ from itertools import product
 
 
 class MCA:
-    def __init__(self, tips: list, timer=10, extra_vol=10, liquid_class="Minimal FD"):
-        self.tips = [tips]
+    def __init__(self, tips=[], timer=10, extra_vol=10, liquid_class="Minimal FD"):
+        self.tips = tips
         self.tips_mounted = False
         self.pintool_mounted = False
         self.pintool_exists = False
         self.extra_vol = extra_vol
         self.timer = timer
         self.liquid_class = liquid_class
+
+    def add_tips(self, tips:list):
+        self.tips.append(tips)
 
     def add_pintool_setup(self, pintool_setup):
         self.pintool_exists = True

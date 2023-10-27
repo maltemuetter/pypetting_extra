@@ -5,13 +5,13 @@ import math
 
 
 class LiHA:
-    def __init__(self, minimal_cd, minimal_fd, liquid_class_mix, waste_volume=0):
+    def __init__(self, minimal_cd="Minimal CD ZMAX", liha_mix="LB CD ZMAX FAST", minimal_fd="Minimal FD", waste_volume=0):
         self.waste_volume = waste_volume
         self.all_tips = np.array([True] * 8)
         self.tip_array = np.ones(8, dtype=bool)
         self.standard_liquid_class = minimal_cd
         self.minimal_fd = minimal_fd
-        self.liquid_class_mix = liquid_class_mix
+        self.liquid_class_mix = liha_mix
 
     def aspirate(self, plate, col, volumes, liquid_class=False, column_mask=False, tip_array=False, waste_volume="default"):
         if waste_volume == "default":
@@ -133,3 +133,33 @@ class LiHA:
         if type(tip_array) != list:
             tip_array = self.tip_array
         return tip_array, liquid_class, column_mask
+
+    def add_pickolo(self, pickolo):
+        self.pickolo = pickolo
+
+    def take_photo(self, img_path, close_pickolo=True):
+        #  careful. This should be connected to the light table position... Replace if time...
+        WL = [direct_command('MoveLiha(1,46,0,1,"01011",0,4,0,10,0,0);')]
+        WL += self.pickolo.take_photo(img_path, close_pickolo=close_pickolo)
+        return WL
+
+    def close_pickolo(self):
+        return [self.pickolo.close_pickolo()]
+
+    def set_minimal_cd(self, minimal_cd):
+        self.standard_liquid_class = minimal_cd
+
+    def set_liha_mix(self, liha_mix):
+        self.liquid_class_mix = liha_mix
+
+    def set_minimal_fd(self, minimal_fd):
+        self.minimal_fd = minimal_fd
+
+    def set_liha_agar(self, liha_Agar):
+        self.liha_Agar = liha_Agar
+
+    def set_zmax(self, ZMax):
+        self.ZMax = ZMax
+
+    def set_waste_volume(self, waste_volume):
+        self.waste_volume = waste_volume

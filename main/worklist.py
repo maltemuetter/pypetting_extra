@@ -3,8 +3,8 @@ from pypetting import write, comment
 
 
 class Worklist:
-    def __init__(self, experiment, name):
-        self.wl_path = experiment.paths["wl"]
+    def __init__(self, name, folder_path=""):
+        self.wl_path = folder_path
         self.wl_file_path = os.path.join(self.wl_path, name)
         self.wl = []
 

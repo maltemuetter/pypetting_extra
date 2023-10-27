@@ -15,6 +15,9 @@ class ROMA:
     def add_plate_reader(self, reader):
         self.plate_reader = reader
 
+    def add_pickolo(self, pickolo):
+        self.pickolo = pickolo
+
     def instert_plate_to_reader(self, plate, new_lid_position=None, end_with_covered_plate=True):
         WL = []
         WL.append(self.plate_reader.open())
@@ -23,6 +26,10 @@ class ROMA:
         WL.append(self.plate_reader.close())
         plate.toggle_in_plate_reader()
         return WL
+
+    def move_plate_to_photo_position(self, plate, new_lid_position):
+        return self.move_plate(plate, self.pickolo.position, new_lid_position=new_lid_position,
+                               end_with_covered_plate=False)
 
     def incubate_plate(self, plate):
         WL = self.move_plate(plate, self.incubator.position)

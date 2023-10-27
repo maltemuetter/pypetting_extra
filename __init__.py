@@ -1,12 +1,15 @@
-from .worklist import Worklist
-from .experiment import Experiment
-from .carrier import Device, Carrier
-from .mca import MCA
-from .liha import LiHA
-from .pintool import PintoolSetup, PintoolDryer
-from .base import direct_command
-from .storex import StoreX
-from .platereader import InfinitePlateReader
-from .protocol import Protocol
-from .roma import ROMA
-from .plate import Plate
+from .main.worklist import Worklist
+from .main.experiment import Experiment
+from .main.carrier import Device, Carrier
+from .main.mca import MCA
+from .main.liha import LiHA
+from .main.pintool import PintoolSetup, PintoolDryer
+from .main.base import direct_command
+from .main.storex import StoreX
+from .main.platereader import InfinitePlateReader
+from .main.protocol import Protocol
+from .main.roma import ROMA
+from .main.plate import Plate
+from .main.robot import Robot
+from .main.pickolo import Pickolo
+from .worktables.default_worktable import robot
