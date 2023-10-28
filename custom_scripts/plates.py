@@ -1,18 +1,27 @@
 from pypetting_extra import Plate
+from pypetting import Labware
 
 
-def make_plates_with_paths(n, experiment, robot, n_max=20):
+def assign_incubator_plates(n, storex_site, labware, n_max=20, site_start=1, cart_start=1, prefix="plate_"):
     plates = []
-    paths = []
-    site, c = 1, 1
+    site, c = site_start, cart_start
     for i in range(n):
         if site >= n_max:
             site = 1
             c += 1
-        else:
-            site += 1
-        paths.append(
-            experiment.windows_paths["img"] + "\\plate_"+str(i)+".png")
-        plates.append(Plate(name="plate_"+str(i), start_position=robot.storex_site,
-                            labware=Labware("Agar Spot Plate", 8, 1), incubating=True, storex_cart=c, cart_site=site))
-    return plates, paths
+
+        plates.append(Plate(name=prefix+str(i), start_position=storex_site,
+                            labware=labware, incubating=True, storex_cart=c, cart_site=site))
+
+        site += 1
+    return plates
+
+
+def assign_shelf_plates_descending(n, shelf, labware, site_start=31, prefix="plate_"):
+    plates = []
+    site = site_start
+    for i in range(n):
+        plates.append(Plate(name=prefix + "_shelf" + str(site+1), start_position=shelf.site(site),
+                            labware=labware, incubating=False, store_pos=shelf.site(site)))
+        site -= 1
+    return plates

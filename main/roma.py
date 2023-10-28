@@ -36,6 +36,10 @@ class ROMA:
         WL += self.incubator.incubate(plate)
         return WL
 
+    def store(self, plate):
+        WL = self.move_plate(plate, plate.store_pos)
+        return WL
+
     def move_plate(self, plate, dest, new_lid_position=None, end_with_covered_plate=True):
         WL = []
         if plate.incubating:

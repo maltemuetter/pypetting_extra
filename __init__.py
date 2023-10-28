@@ -14,3 +14,4 @@ from .main.plate import Plate
 from .main.robot import Robot
 from .main.pickolo import Pickolo
 from .worktables.default_worktable import robot
+from .worktables.default_carrier import mp2, mp3, mp_3pos_deck, shelf, pintool_wash_station, mca_4pos, mca_3pos, tilter

@@ -87,30 +87,30 @@ class LiHA:
                                       liquid_class=self.minimal_fd, column_mask=column_mask)
         return worklist
 
-    def dilution_row(self, plate, well_volume=200, stop_at_col=12, n_mix=3, tip_array=False, dilution_factor=10, liquid_class=False, column_mask=False):
+    def dilution_row(self, plate, well_volume=200, start_col=1, stop_at_col=12, n_mix=3, tip_array=False, dilution_factor=10, liquid_class=False, column_mask=False):
         tip_array, liquid_class, column_mask = self.fill_standard_params(
             plate, liquid_class, tip_array, column_mask)
         mix_volume = 0.6*well_volume
         transfer_volume = well_volume/dilution_factor
-        worklist = self.simple_wash()
-        for i in range(stop_at_col-1):
-            worklist += self.aspirate(plate, i+1,
+        worklist = []
+        for i in range(start_col, stop_at_col):
+            worklist += self.aspirate(plate, i,
                                       transfer_volume*tip_array, liquid_class=liquid_class, column_mask=column_mask)
-            worklist += self.dispense(plate, i+2,
+            worklist += self.dispense(plate, i+1,
                                       transfer_volume*tip_array, "Minimal CD ZMAX", column_mask=column_mask)
-            worklist += self.mix(plate, i+2, mix_volume, n_mix,
+            worklist += self.mix(plate, i+1, mix_volume, n_mix,
                                  tip_array=tip_array, column_mask=column_mask)
             worklist += self.simple_wash()
         return worklist
 
-    def fill_96_well_plate(self, src_plate, dest_plate, fill_volume, start_col=1, end_col=12):
+    def fill_96_well_plate(self, src_plate, dest_plate, fill_volume, start_col=1, end_col=12, src_col=1):
         wl = self.simple_wash()
         vmax = 950
         n = math.floor(vmax/fill_volume)
         count = 0
         for col in range(start_col, end_col):
             if count == 0:
-                wl.extend(self.aspirate(src_plate, 1, n*fill_volume))
+                wl.extend(self.aspirate(src_plate, src_col, n*fill_volume))
                 count = n
 
             wl.extend(self.dispense(dest_plate, col,
@@ -137,10 +137,10 @@ class LiHA:
     def add_pickolo(self, pickolo):
         self.pickolo = pickolo
 
-    def take_photo(self, img_path, close_pickolo=True):
+    def take_photo(self, img_name, close_pickolo=True):
         #  careful. This should be connected to the light table position... Replace if time...
         WL = [direct_command('MoveLiha(1,46,0,1,"01011",0,4,0,10,0,0);')]
-        WL += self.pickolo.take_photo(img_path, close_pickolo=close_pickolo)
+        WL += self.pickolo.take_photo(img_name, close_pickolo=close_pickolo)
         return WL
 
     def close_pickolo(self):

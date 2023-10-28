@@ -8,12 +8,12 @@ def make_photo_of_plate(robot, plate, new_lid_pos, img_path, close_pickolo=True)
     return WL
 
 
-def make_photos_of_plates(robot, plates, new_lid_pos, img_paths, protocol, read=1):
+def make_photos_of_plates(robot, plates, new_lid_pos, protocol, add=""):
     WL = []
-    for plate, img_path in zip(plates, img_paths):
+    for plate in plates:
         WL += robot.roma.move_plate_to_photo_position(plate, new_lid_pos)
-        WL += robot.liha.take_photo(img_path, close_pickolo=False)
+        WL += robot.liha.take_photo(plate.name+add, close_pickolo=False)
         WL += robot.roma.incubate_plate(plate)
-        WL += [protocol.log_entry(plate.name + "_run"+str(read))]
+        WL += [protocol.log_entry(plate.name + add)]
     WL += robot.pickolo.close()
     return WL

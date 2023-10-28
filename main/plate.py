@@ -9,13 +9,16 @@ class Plate:
                  start_position: GridSite,
                  incubating=False,
                  storex_cart=None,
-                 cart_site=None):
+                 cart_site=None,
+                 store_pos=None):
         self.name = name
         self.labware = labware
         self.position = self.lid_position = start_position
         self.covered = True  #  Always start with a covered lid
         self.incubating = incubating
         self.in_plate_reader = False
+        self.store_pos = store_pos
+
         if labware.spacing == 1:
             frag = [True]
         elif labware.spacing == 2:

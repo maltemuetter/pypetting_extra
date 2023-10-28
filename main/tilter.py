@@ -3,11 +3,12 @@ from pypetting import wait_timer, start_timer
 
 
 class PlateTilter:
-    def __init__(self, name, grid, timer=3, tilt_time=25, self.recovery_time=10):
+    def __init__(self, name, grid, timer=3, tilt_time=25, recovery_time=10):
         self.name = name
         self.grid = grid
         self.timer = timer
         self.tilt_time = tilt_time
+        self.recovery_time = recovery_time
 
     def site(self, site):
         if site > 1:

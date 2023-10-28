@@ -1,7 +1,8 @@
 from pypetting_extra.custom_scripts.routines import make_photos_of_plates
-from pypetting_extra import robot, Plate, Worklist, Experiment, Protocol
+from pypetting_extra import robot, Plate, Experiment, Protocol
 from pypetting import Labware
 from pypetting_extra.main.base import direct_command
+import os
 
 exp_path = os.path.join(os.getcwd(), "experiments")
 experiment = Experiment(
@@ -27,6 +28,6 @@ for i in range(n):
     plates.append(Plate(name="plate_"+str(i), start_position=robot.storex_site,
                         labware=Labware("Agar Spot Plate", 8, 1), incubating=True, storex_cart=c, cart_site=site))
 
-photo_wl = Worklist("photo_wl.gwl")
+photo_wl = experiment.make_worklist("photo_wl.gwl")
 photo_wl.add(make_photos_of_plates(robot, plates, lid1_pos, paths, protocol))
 photo_wl.save()

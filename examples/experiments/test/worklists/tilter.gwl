@@ -1,0 +1,7 @@
+C;INIT - gwl created by pypetting
+B;Command("O2SSO2,1",1,1,,,2,2,0);
+B;StartTimer("3");
+B;WaitTimer("3","25");
+B;Command("O2SSO2,0",1,1,,,2,2,0);]
+B;StartTimer("3");
+B;WaitTimer("3","10");

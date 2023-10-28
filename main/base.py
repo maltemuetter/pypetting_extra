@@ -1,16 +1,13 @@
-from pypetting import GridSite,  start_timer, wait_timer
+def execute_command_script(script_path: str, args: dict, windows_python_path: str):
+    cmd = script_path
+    for arg, value in args.items():
+        cmd += ' "' + arg + '" ' + value
+    return execute_command_line_python(cmd, windows_python_path)
+
+
+def execute_command_line_python(command_str: str, windows_python_path: str):
+    return direct_command('Execute(' + windows_python_path + " " + command_str+',0,"py_return",2);')
 
 
 def direct_command(command: str):
     return bytes("B;" + command, "utf-8")
-
-
-def wait_for_loop_timer(self, timer_id=1):
-    T = self.exp.T_all
-    i = self.i
-    if i+1 < len(T):
-        dt = T[i+1] - T[i]
-    else:
-        dt = 1
-    print(dt)
-    return wait_timer(timer_id, dt*3600)

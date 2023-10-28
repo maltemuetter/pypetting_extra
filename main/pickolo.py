@@ -2,13 +2,17 @@ from .base import direct_command
 
 
 class Pickolo:
-    def __init__(self, light_table, windows_pickolo_path, pickolo_profile_name):
+    def __init__(self, light_table, windows_pickolo_path, pickolo_profile_name, windows_img_folder_path=None):
         self.position = light_table.site(0)
         self.windows_pickolo_path = windows_pickolo_path
         self.profile_name = pickolo_profile_name
         self.pickolo_open = False
+        self.img_folder = windows_img_folder_path
 
-    def take_photo(self, windows_img_path, close_pickolo=True,  capture_cmd=" -c -o "):
+    def take_photo(self, img_name, close_pickolo=True,  capture_cmd=" -c -o "):
+        if not self.img_folder:
+            raise Exception("pls set a windows_img_folder_path first")
+        windows_img_path = self.img_folder + "\\" + img_name
         WL = []
         if not self.pickolo_open:
             WL += self.open()
@@ -16,6 +20,9 @@ class Pickolo:
         if close_pickolo:
             WL += self.close()
         return WL
+
+    def set_img_folder(self, windows_img_folder_path: str):
+        self.img_folder = windows_img_folder_path
 
     def open(self):
         WL = []

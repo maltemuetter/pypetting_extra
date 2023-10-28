@@ -3,11 +3,10 @@ from pypetting import open_infinite_reader, close_infinite_reader, measure_infin
 
 
 class InfinitePlateReader:
-    def __init__(self, position):
+    def __init__(self, position, settings_folder_path=None):
         self.position = position
         self.is_open = False
-        self.settings = {}
-        self.folder_paths = {}
+        self.settings_folder = settings_folder_path
 
     def open(self):
         self.is_open = True
@@ -17,16 +16,20 @@ class InfinitePlateReader:
         self.is_open = False
         return close_infinite_reader()
 
-    def measure(self, file_name, settings_key):
-        settings_path = self.settings[settings_key]
-        file_path = self.folder_paths[settings_key] + file_name
+    def measure(self, file_path, settings_file_name):
+        settings_path = self.settings_folder + settings_file_name
         return measure_infinite_reader(file_path, settings_path)
 
-    def add_settings(self, key, settings_file_path, windows_folder_path, mac_folder_path):
-        self.settings.update({key: settings_file_path})
-        self.folder_paths.update({key: windows_folder_path})
-        self.create_folder(mac_folder_path)
+    def return_measurement_method(self, settings_file_name, output_folder_path):
+        settings_path = self.settings_folder + "\\" + settings_file_name
+        return Measurement(settings_path, output_folder_path)
 
-    def create_folder(self, path):
-        if not os.path.exists(path):
-            os.makedirs(path)
+
+class Measurement:
+    def __init__(self, settings_path, output_folder_path):
+        self.settings = settings_path
+        self.output = output_folder_path
+
+    def measure(self, filename):
+        file_path = self.output + "\\" + filename
+        return measure_infinite_reader(file_path, self.settings)

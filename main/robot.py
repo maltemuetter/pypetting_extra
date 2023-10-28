@@ -45,3 +45,6 @@ class Robot:
 
     def add_tilter(self, tilter):
         self.tilter = tilter
+
+    def assign_pickolo_img_path(self, windows_img_folder_path):
+        self.pickolo.set_img_folder(windows_img_folder_path)
