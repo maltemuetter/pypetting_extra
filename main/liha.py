@@ -52,6 +52,8 @@ class LiHA:
 
     def move_liha_to_lighttable(self):
         return direct_command('MoveLiha(1,46,0,1,"01011",0,4,0,10,0,0);')
+        # If time replace with correct comand defined by the plate pos.
+       # return move_liha(self.pickolo.camera_position, 1)
 
     def move_liha(self, plate, column=1):
         return move_liha(plate.position, column)
@@ -139,7 +141,7 @@ class LiHA:
 
     def take_photo(self, img_name, close_pickolo=True):
         #  careful. This should be connected to the light table position... Replace if time...
-        WL = [direct_command('MoveLiha(1,46,0,1,"01011",0,4,0,10,0,0);')]
+        WL = [self.move_liha_to_lighttable()]
         WL += self.pickolo.take_photo(img_name, close_pickolo=close_pickolo)
         return WL
 

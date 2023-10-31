@@ -1,7 +1,7 @@
 def execute_command_script(script_path: str, args: dict, windows_python_path: str):
     cmd = script_path
     for arg, value in args.items():
-        cmd += ' "' + arg + '" ' + value
+        cmd += " " + arg + " " + value
     return execute_command_line_python(cmd, windows_python_path)
 
 

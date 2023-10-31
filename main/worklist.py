@@ -8,7 +8,7 @@ class Worklist:
         self.wl = []
         self.protocol = protocol
 
-    def add(self, step, msg=False):
+    def add(self, step, msg=False, save=True):
         if msg:
             self.wl.append(comment(msg))
             if self.protocol:
@@ -19,6 +19,9 @@ class Worklist:
             self.wl += step.wl
         else:
             self.wl.append(step)
+
+        if save:
+            self.save()
 
     def save(self):
         write.write_gwl(self.wl_file_path, self.wl)

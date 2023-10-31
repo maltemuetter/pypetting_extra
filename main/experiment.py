@@ -95,9 +95,10 @@ class Experiment:
     def setup_worklist(self, name, protocol=None):
         return Worklist(os.path.join(self.paths["wl"], name), protocol=protocol)
 
-    def setup_protocol(self, name="timelog.csv"):
-        logfile_path = self.windows_paths["log_files"] + "\\" + name
-        return Protocol(logfile_path, self.windows_paths["python"])
+    def setup_protocol(self, script_name="time_log.py", file_name="timelog.csv"):
+        logfile_path = self.windows_paths["log_files"] + "\\" + file_name
+        script_path = self.windows_paths["cmd_scripts"] + "\\" + script_name
+        return Protocol(script_path, logfile_path, self.windows_paths["python"])
 
     def setup_measurement(self, settings_file_name, folder_key):
         settings_path = os.path.join(
