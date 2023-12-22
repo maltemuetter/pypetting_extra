@@ -25,33 +25,33 @@ class MCA:
         if self.tips_mounted == True:
             raise Exception("tips already mounted")
         self.tips_mounted = True
-        self.tip_position = self.tips[tip_idx].position
-        wl = mca_get_tips(self.tip_position)
+        self.tip_gridsite = self.tips[tip_idx].gridsite
+        wl = mca_get_tips(self.tip_gridsite)
         return wl
 
     def get_pintool(self):
         if (self.tips_mounted == True) | (self.pintool_mounted == True):
             raise Exception("tips already mounted")
-        self.tip_position = self.pintool.position
+        self.tip_gridsite = self.pintool.gridsite
         self.pintool_mounted = True
-        return mca_get_tip_block(self.tip_position, airgap=0)
+        return mca_get_tip_block(self.tip_gridsite, airgap=0)
 
     def drop_pintool(self):
         if self.pintool_mounted == False:
             raise Exception("tips not mounted")
         self.pintool_mounted = False
-        return mca_drop_tip_block(self.tip_position)
+        return mca_drop_tip_block(self.tip_gridsite)
 
     def return_tips(self):
         if self.tips_mounted == False:
             raise Exception("tips not mounted")
         self.tips_mounted = False
-        return mca_drop_tips(self.tip_position)
+        return mca_drop_tips(self.tip_gridsite)
 
     def aspirate(self, plate, row, col, volume, liquid_class=False):
         if not liquid_class:
             liquid_class = self.liquid_class
-        WL = [mca_aspirate(plate.position,
+        WL = [mca_aspirate(plate.gridsite,
                            row,
                            col,
                            volume + self.extra_vol,
@@ -64,7 +64,7 @@ class MCA:
     def dispense(self, plate, row, col, volume, liquid_class=False):
         if not liquid_class:
             liquid_class = self.liquid_class
-        WL = [mca_dispense(plate.position,
+        WL = [mca_dispense(plate.gridsite,
                            row,
                            col,
                            volume,
@@ -134,7 +134,7 @@ class MCA:
              local: int = 0):
         labware = plate.labware
         spacing = labware.spacing
-        grid_site = plate.position
+        grid_site = plate.gridsite
         command = (
             (
                 "B;MCAMove("

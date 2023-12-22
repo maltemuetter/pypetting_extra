@@ -1,14 +1,14 @@
-import os
 from pypetting import write, comment
 
 
 class Worklist:
-    def __init__(self, filepath, protocol=None):
-        self.wl_file_path = filepath
+    def __init__(self, filepath, protocol=None, autosave=True):
+        self.filepath = filepath
         self.wl = []
         self.protocol = protocol
+        self.autosave = autosave
 
-    def add(self, step, msg=False, save=True):
+    def add(self, step, msg=False):
         if msg:
             self.wl.append(comment(msg))
             if self.protocol:
@@ -20,11 +20,11 @@ class Worklist:
         else:
             self.wl.append(step)
 
-        if save:
+        if self.autosave:
             self.save()
 
     def save(self):
-        write.write_gwl(self.wl_file_path, self.wl)
+        write.write_gwl(self.filepath, self.wl)
 
     def add_protocol(self, protocol):
         self.protocol = protocol

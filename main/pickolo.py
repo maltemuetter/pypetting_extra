@@ -3,8 +3,8 @@ from .base import direct_command
 
 class Pickolo:
     def __init__(self, light_table, windows_pickolo_path, pickolo_profile_name, windows_img_folder_path=None):
-        self.camera_position = light_table.site(0)
-        self.position = light_table.site(1)
+        self.camera_gridsite = light_table.gridsite(0)
+        self.gridsite = light_table.gridsite(1)
         self.light_table = light_table
         self.windows_pickolo_path = windows_pickolo_path
         self.profile_name = pickolo_profile_name

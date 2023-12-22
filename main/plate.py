@@ -6,14 +6,14 @@ class Plate:
     def __init__(self,
                  name: str,
                  labware,
-                 start_position: GridSite,
+                 start_gridsite: GridSite,
                  incubating=False,
                  storex_cart=None,
                  cart_site=None,
                  store_pos=None):
         self.name = name
         self.labware = labware
-        self.position = self.lid_position = start_position
+        self.gridsite =  self.lid_gridsite = start_gridsite
         self.covered = True  #  Always start with a covered lid
         self.incubating = incubating
         self.in_plate_reader = False
@@ -32,13 +32,13 @@ class Plate:
             self.storex_cart = storex_cart
             self.cart_site = cart_site
 
-    def update_position(self, position):
-        self.position = position
+    def update_gridsite(self, gridsite: GridSite):
+        self.gridsite = self.gridsite = gridsite
 
-    def update_lid_position(self, lid_position):
-        self.lid_position = lid_position
+    def update_lid_gridsite(self, lid_gridsite: GridSite):
+        self.lid_gridsite = self.lid_gridsite = lid_gridsite
 
-    def assign_storeX_positions(self, storex_cart, cart_site):
+    def assign_storeX_sites(self, storex_cart, cart_site):
         self.cart_site = cart_site
         self.storex_cart = storex_cart
 
@@ -47,3 +47,16 @@ class Plate:
 
     def toggle_in_plate_reader(self):
         self.in_plate_reader = not self.in_plate_reader
+
+    def __str__(self):
+        return (f"Plate(name={self.name}, "
+                f"gridsite={self.gridsite}, "
+                f"covered={self.covered}, "
+                f"incubating={self.incubating}, "
+                f"in_plate_reader={self.in_plate_reader})")
+
+    def __repr__(self):
+        return (f"Plate(\nname={self.name!r}, \n"
+                f"labware={self.labware!r}, \n"
+                f"current_gridsite={self.gridsite!r}, \n"
+                f"incubating={self.incubating})")

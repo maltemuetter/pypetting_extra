@@ -1,12 +1,14 @@
-import os
 from pypetting import open_infinite_reader, close_infinite_reader, measure_infinite_reader
 
 
 class InfinitePlateReader:
-    def __init__(self, position, settings_folder_path=None):
-        self.position = position
+    def __init__(self, gridsite, settings_folder_path=None):
+        self.gridsite = gridsite
         self.is_open = False
         self.settings_folder = settings_folder_path
+
+    def add_settings_folder(self, path):
+        self.settings_folder = path
 
     def open(self):
         self.is_open = True

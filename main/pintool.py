@@ -30,7 +30,7 @@ def add_wash_step(self, wash_trough: Device, blot: Device):
 
 class PintoolDryer:
     def __init__(self, gridSite, labware, dt=60, timer=11):
-        self.position = gridSite
+        self.gridsite = gridSite
         self.time = dt
         self.timer = timer
         self.labware = labware

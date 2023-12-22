@@ -11,7 +11,7 @@ from .main.platereader import InfinitePlateReader
 from .main.protocol import Protocol
 from .main.roma import ROMA
 from .main.plate import Plate
-from .main.robot import Robot
+from .main.worktable import Worktable
 from .main.pickolo import Pickolo
-from .worktables.default_worktable import robot
-from .worktables.default_carrier import mp2, mp3, mp_3pos_deck, shelf, pintool_wash_station, mca_4pos, mca_3pos, tilter
+from .worktables.default_worktable import worktable as default_worktable
+#from .worktables.default_carrier import mp2, mp3, mp_3pos_deck, shelf, pintool_wash_station, mca_4pos, mca_3pos, tilter

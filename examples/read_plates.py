@@ -2,6 +2,7 @@ from pypetting_extra.custom_scripts.routines import make_photos_of_plates
 from pypetting_extra import robot, Plate, Experiment, Protocol
 from pypetting import Labware
 from pypetting_extra.main.base import direct_command
+from pypetting.labware import labwares
 import os
 
 exp_path = os.path.join(os.getcwd(), "experiments")
@@ -12,6 +13,16 @@ experiment.initialize()
 protocol = Protocol(experiment, "timelog.csv")
 mp2 = robot.carrier["MP 2Pos Fixed"]
 lid1_pos = mp2.site(0)
+
+
+shelf = robot.carrier[ 'Shelf 8x4Pos']
+shelf.define_plate("dilutionplate", labwares["greiner96"], 30)
+
+assayplate = robot.incubator.define_plate("assayplate", labwares["greiner384"], 1, 2)
+
+cart_site_1 = robot.incubator.cart_site(1,1)
+agarplate = cart_site.define_plate()
+
 
 plates = []
 paths = []

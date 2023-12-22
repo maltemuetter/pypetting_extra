@@ -1,6 +1,5 @@
 import os
 from .base import direct_command
-from pypetting import write
 import shutil
 from .worklist import Worklist
 from .protocol import Protocol
@@ -24,7 +23,6 @@ class Experiment:
             "log_files": [exp_name, "log_files"],
             "cmd_scripts": [exp_name, "cmd_scripts"],
             "img": [exp_name, "img_files"],
-            "lum": [exp_name, "lum_files"],
             "wl": [exp_name, "worklists"],
             "reader_settings": [exp_name, "reader_settings"]
         }
@@ -38,11 +36,12 @@ class Experiment:
         if copy_reader_settings:
             self.clone_reader_settings()
 
-    def add_folder(self, key, folder):
-        self.folders.update({key: folder})
-
-    def replace_folders(self, folders):
-        self.folders = folders
+    def add_folder(self, key, folder, write = False):
+        self.folders.update({key: [self.name, folder]})
+        if write:
+            self.make_paths()
+            self.make_windows_paths()
+            self.write_folders()
 
     def del_folder(self, key):
         if key in self.folders:
@@ -101,6 +100,9 @@ class Experiment:
         return Protocol(script_path, logfile_path, self.windows_paths["python"])
 
     def setup_measurement(self, settings_file_name, folder_key):
+        if folder_key not in self.paths.keys():
+            self.add_folder(folder_key, folder_key, write = True)
+    
         settings_path = os.path.join(
             self.paths["reader_settings"], settings_file_name)
         output_folder = self.windows_paths[folder_key]

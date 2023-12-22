@@ -18,11 +18,10 @@ class LiHA:
             waste_volume = self.waste_volume
         else:
             waste_volume = waste_volume
-
         tip_array, liquid_class, column_mask = self.fill_standard_params(
             plate, liquid_class, tip_array, column_mask)
 
-        WL = [aspirate(plate.position,
+        WL = [aspirate(plate.gridsite,
                        col,
                        column_mask,
                        (volumes+waste_volume)*tip_array,
@@ -30,7 +29,7 @@ class LiHA:
                        labware=plate.labware,
                        spacing=plate.labware.spacing)]
         if waste_volume != 0:
-            WL += [dispense(plate.position,
+            WL += [dispense(plate.gridsite,
                             col,
                             column_mask,
                             waste_volume*tip_array,
@@ -42,7 +41,7 @@ class LiHA:
     def dispense(self, plate, col, volumes, liquid_class=False, tip_array=False, column_mask=False):
         tip_array, liquid_class, column_mask = self.fill_standard_params(
             plate, liquid_class, tip_array, column_mask)
-        return [dispense(plate.position,
+        return [dispense(plate.gridsite,
                          col,
                          column_mask,
                          volumes*tip_array,
@@ -56,7 +55,7 @@ class LiHA:
        # return move_liha(self.pickolo.camera_position, 1)
 
     def move_liha(self, plate, column=1):
-        return move_liha(plate.position, column)
+        return move_liha(plate.gridsite, column)
 
     def simple_wash(self):
         ethanol1 = GridSite(30, 0, "")
@@ -96,6 +95,7 @@ class LiHA:
         transfer_volume = well_volume/dilution_factor
         worklist = []
         for i in range(start_col, stop_at_col):
+            print(i, "to", i+1)
             worklist += self.aspirate(plate, i,
                                       transfer_volume*tip_array, liquid_class=liquid_class, column_mask=column_mask)
             worklist += self.dispense(plate, i+1,
@@ -165,3 +165,40 @@ class LiHA:
 
     def set_waste_volume(self, waste_volume):
         self.waste_volume = waste_volume
+
+    def spot(self, plate, volume,  tip_array):
+        wl = self.dispense(
+                plate,
+                1,
+                volume/2,
+                column_mask = np.array(tip_array),
+                tip_array=np.array(tip_array),
+                liquid_class="Minimal CD Agar"
+            )
+        
+        wl += self.dispense(
+                plate,
+                2,
+                volume/2,
+                column_mask = np.array(tip_array),
+                tip_array=np.array(tip_array),
+                liquid_class="Minimal CD Agar"
+            )
+        
+        wl.append(
+            self.move_liha_to_lighttable()
+        )
+        return wl
+
+    def transfer_and_spot(self, src_plate, src_col:int, target_palte, tip_arr:list, vol = 10):
+        WL = []
+        WL.extend(
+            self.aspirate(
+                src_plate,
+                src_col,
+                vol,
+                column_mask = np.array(tip_arr),
+                tip_array = np.array(tip_arr)
+        ))
+        WL.extend(self.spot(target_palte, vol, tip_arr))
+        return WL

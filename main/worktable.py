@@ -1,8 +1,8 @@
 from pypetting_extra import ROMA, LiHA, MCA, InfinitePlateReader, StoreX, Carrier
-from pypetting import Labware, GridSite
+from pypetting import GridSite
 
 
-class Robot:
+class Worktable:
     def __init__(self):
         self.roma = ROMA()
         self.liha = LiHA()
@@ -27,11 +27,14 @@ class Robot:
     def add_pintool(self, pintool_setup):
         self.mca.add_pintool_setup(pintool_setup)
 
+    def add_tips(self, ditis):
+        self.mca.add_tips(ditis)
+
     def return_tools(self):
         return self.roma, self.liha, self.mca, self.plate_reader
 
-    def add_carrier(self, name, position):
-        self.carrier.update({name: Carrier(name, position)})
+    def add_carrier(self, name, grid, capacity):
+        self.carrier.update({name: Carrier(name, grid, capacity)})
         self.carrier_names.append(name)
 
     def add_pintool_setup(self, pintool_setup):
