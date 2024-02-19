@@ -38,6 +38,12 @@ class LiHA:
                             spacing=plate.labware.spacing)]
         return WL
 
+    def set_tip_array(self, tip_array:np.array):
+        self.tip_array = tip_array
+
+    def set_column_mask(self, column_mask:list):
+        self.column_mask = column_mask
+
     def dispense(self, plate, col, volumes, liquid_class=False, tip_array=False, column_mask=False):
         tip_array, liquid_class, column_mask = self.fill_standard_params(
             plate, liquid_class, tip_array, column_mask)
@@ -78,13 +84,13 @@ class LiHA:
               move_liha(ethanol, 1, local=True, labware="trough100")]
         return WL
 
-    def mix(self, plate, col, volume, cycles,  liquid_class=False, column_mask=False, tip_array=False):
+    def mix(self, plate, col, volumes, cycles,  liquid_class=False, column_mask=False, tip_array=False):
         tip_array, liquid_class, column_mask = self.fill_standard_params(
             plate, liquid_class, tip_array, column_mask)
         for _ in range(cycles):
             worklist = self.aspirate(
-                plate, col, volume, tip_array=tip_array, liquid_class=liquid_class, column_mask=column_mask, waste_volume=0)
-            worklist += self.dispense(plate, col, volume, tip_array=tip_array,
+                plate, col, volumes, tip_array=tip_array, liquid_class=liquid_class, column_mask=column_mask, waste_volume=0)
+            worklist += self.dispense(plate, col, volumes, tip_array=tip_array,
                                       liquid_class=self.minimal_fd, column_mask=column_mask)
         return worklist
 
@@ -166,7 +172,7 @@ class LiHA:
     def set_waste_volume(self, waste_volume):
         self.waste_volume = waste_volume
 
-    def spot(self, plate, volume,  tip_array):
+    def spot(self, plate, volume,  tip_array = np.array(8*[True])):
         wl = self.dispense(
                 plate,
                 1,
@@ -200,5 +206,5 @@ class LiHA:
                 column_mask = np.array(tip_arr),
                 tip_array = np.array(tip_arr)
         ))
-        WL.extend(self.spot(target_palte, vol, tip_arr))
+        WL.extend(self.spot(target_palte, vol, tip_array = tip_arr))
         return WL

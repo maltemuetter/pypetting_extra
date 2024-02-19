@@ -4,14 +4,14 @@ import shutil
 from .worklist import Worklist
 from .protocol import Protocol
 from .platereader import Measurement
-
+import pandas as pd
 
 class Experiment:
     def __init__(self,
                  exp_name,
                  mac_experiment_folder_path,
                  windows_experiment_folder_path,
-                 windows_python_path="C:\\Users\\COMPUTER\\AppData\\Local\\Programs\\Python\\Python310\\python.exe"):
+                 windows_python_path="C:\\Users\\COMPUTER\\AppData\\Local\\Programs\\Python\\Python310\\python.exe", clone_src = True):
 
         self.path = mac_experiment_folder_path
         self.windows_path = windows_experiment_folder_path
@@ -21,22 +21,16 @@ class Experiment:
         self.folders = {
             "exp": [exp_name],
             "log_files": [exp_name, "log_files"],
-            "cmd_scripts": [exp_name, "cmd_scripts"],
-            "img": [exp_name, "img_files"],
             "wl": [exp_name, "worklists"],
-            "reader_settings": [exp_name, "reader_settings"]
         }
 
-    def initialize(self, copy_cmd_scripts=True, copy_reader_settings=True):
         self.make_paths()
         self.make_windows_paths()
         self.write_folders()
-        if copy_cmd_scripts:
-            self.clone_command_scripts()
-        if copy_reader_settings:
-            self.clone_reader_settings()
-
-    def add_folder(self, key, folder, write = False):
+        if clone_src:
+            self.clone_src_code()
+        
+    def add_folder(self, key, folder, write = True):
         self.folders.update({key: [self.name, folder]})
         if write:
             self.make_paths()
@@ -62,25 +56,6 @@ class Experiment:
             if not os.path.exists(path):
                 os.makedirs(path)
 
-    def clone_command_scripts(self):
-        import pypetting_extra.cmd_scripts as cmd
-        cmd_path = cmd.__path__[0]
-        for filename in os.listdir(cmd_path):
-            if filename.endswith(".py"):
-                src_path = os.path.join(cmd_path, filename)
-                dest_path = os.path.join(self.paths["cmd_scripts"], filename)
-                shutil.copy(src_path, dest_path)
-
-    def clone_reader_settings(self):
-        import pypetting_extra.reader_settings as reader_settings
-        reader_settings_path = reader_settings.__path__[0]
-        for filename in os.listdir(reader_settings_path):
-            if filename.endswith(".xml"):
-                src_path = os.path.join(reader_settings_path, filename)
-                dest_path = os.path.join(
-                    self.paths["reader_settings"], filename)
-                shutil.copy(src_path, dest_path)
-
     def execute_command_script(self, script_name, args: dict):
         script_path = self.windows_paths["cmd_scripts"] + "\\" + script_name
         cmd = script_path
@@ -93,6 +68,10 @@ class Experiment:
 
     def setup_worklist(self, name, protocol=None):
         return Worklist(os.path.join(self.paths["wl"], name), protocol=protocol)
+    
+    def setup_pickolo_folder(self, folder_key, folder_name, liha):
+        self.add_folder(folder_key, folder_name, write=True)
+        liha.pickolo.set_img_folder(self.windows_paths[folder_key])
 
     def setup_protocol(self, script_name="time_log.py", file_name="timelog.csv"):
         logfile_path = self.windows_paths["log_files"] + "\\" + file_name
@@ -107,3 +86,38 @@ class Experiment:
             self.paths["reader_settings"], settings_file_name)
         output_folder = self.windows_paths[folder_key]
         return Measurement(settings_path, output_folder)
+
+    def save_csv(self, df:pd.DataFrame, filename, folder = "log_files"):
+        filepath = os.path.join(self.paths[folder], filename)
+        df.to_csv(filepath, index=False)
+
+    def clone_folder(self, foldername:str):
+        src_folder_path = os.path.join(os.getcwd(), foldername)
+        dest_folder_path = os.path.join(self.path, self.name, foldername)
+        os.makedirs(dest_folder_path, exist_ok=True)
+
+        for filename in os.listdir(src_folder_path):
+            src_file_path = os.path.join(src_folder_path, filename)
+            dest_file_path = os.path.join(dest_folder_path, filename)
+
+            if os.path.isfile(src_file_path) and not os.path.exists(dest_file_path):
+                shutil.copy(src_file_path, dest_file_path)
+
+        self.add_folder(foldername, foldername)
+
+    def clone_src_code(self, extensions:list = [".py", ".xlsx", ".md", ".rmd", ".txt"]):
+        src_folder_path = os.getcwd()
+        dest_folder_path = os.path.join(self.path, self.name, "src_code")
+        os.makedirs(dest_folder_path, exist_ok=True)
+
+        for filename in os.listdir(src_folder_path):
+            if filename.startswith("~$"):
+                continue 
+            if any(filename.endswith(ext) for ext in extensions):
+                src_file_path = os.path.join(src_folder_path, filename)
+                dest_file_path = os.path.join(dest_folder_path, filename)
+
+                if os.path.isfile(src_file_path) and not os.path.exists(dest_file_path):
+                    shutil.copy(src_file_path, dest_file_path)
+
+        self.add_folder("src_code", "src_code")

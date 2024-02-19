@@ -28,3 +28,11 @@ class Worklist:
 
     def add_protocol(self, protocol):
         self.protocol = protocol
+
+    def __repr__(self):
+        protocol_info = f"Protocol: {self.protocol}" if self.protocol else "No protocol"
+        autosave_status = "enabled" if self.autosave else "disabled"
+        return (f"Worklist Filepath: '{self.filepath}'\n"
+                f"Steps Count: {len(self.wl)}\n"
+                f"{protocol_info}\n"
+                f"Autosave: {autosave_status}")
