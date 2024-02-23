@@ -98,7 +98,7 @@ class Cartridge(ContainerMixin):
     def create_sites(self, number_of_sites):
         for i in range(number_of_sites):
                 self.sites.append(CartSite(
-                    self.storex_gridsite.grid, self.storex_gridsite.carrier, i, self.cart_num))
+                    self.storex_gridsite.grid, self.storex_gridsite.carrier, i+1, self.cart_num))
 
     def locations(self):
         locations = []

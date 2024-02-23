@@ -12,7 +12,7 @@ class PlateTilter:
             raise Exception("the tilter has only two positions.")
         return GridSite(grid=self.grid, carrier=self.name, site=site)
 
-    def tilt(self, tilt_time=12, timer=3,  recovery_time=10):
+    def tilt(self, tilt_time=7, timer=3,  recovery_time=8):
         return [
             direct_command('Command("O2SSO2,1",1,1,,,2,2,0);'),
             start_timer(timer),

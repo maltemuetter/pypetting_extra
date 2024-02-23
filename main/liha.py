@@ -4,53 +4,36 @@ from pypetting import (aspirate, dispense, wash, move_liha, GridSite)
 import math
 
 
+
 class LiHA:
-    def __init__(self, minimal_cd="Minimal CD ZMAX", liha_mix="LB CD ZMAX FAST", minimal_fd="Minimal FD", waste_volume=0):
-        self.waste_volume = waste_volume
+    def __init__(self):
         self.all_tips = np.array([True] * 8)
-        self.tip_array = np.ones(8, dtype=bool)
-        self.standard_liquid_class = minimal_cd
-        self.minimal_fd = minimal_fd
-        self.liquid_class_mix = liha_mix
+        self.minimal_fd = "Minimal FD"
+        self.liquid_mix = "LB CD ZMAX FAST"
 
-    def aspirate(self, plate, col, volumes, liquid_class=False, column_mask=False, tip_array=False, waste_volume="default"):
-        if waste_volume == "default":
-            waste_volume = self.waste_volume
-        else:
-            waste_volume = waste_volume
-        tip_array, liquid_class, column_mask = self.fill_standard_params(
-            plate, liquid_class, tip_array, column_mask)
-
+    def aspirate(self, plate, col, volumes, column_mask, liquid_class="Minimal CD ZMAX", tip_array = 8*[True], waste_volume=0):
         WL = [aspirate(plate.gridsite,
                        col,
-                       column_mask,
-                       (volumes+waste_volume)*tip_array,
+                       list(column_mask),
+                       (volumes+waste_volume)*np.array(tip_array),
                        liquid_class,
                        labware=plate.labware,
                        spacing=plate.labware.spacing)]
         if waste_volume != 0:
             WL += [dispense(plate.gridsite,
                             col,
-                            column_mask,
-                            waste_volume*tip_array,
+                            list(column_mask),
+                            waste_volume*np.array(tip_array),
                             liquid_class=self.minimal_fd,
                             labware=plate.labware,
                             spacing=plate.labware.spacing)]
         return WL
-
-    def set_tip_array(self, tip_array:np.array):
-        self.tip_array = tip_array
-
-    def set_column_mask(self, column_mask:list):
-        self.column_mask = column_mask
-
-    def dispense(self, plate, col, volumes, liquid_class=False, tip_array=False, column_mask=False):
-        tip_array, liquid_class, column_mask = self.fill_standard_params(
-            plate, liquid_class, tip_array, column_mask)
+    
+    def dispense(self, plate, col, volumes, column_mask, liquid_class="Minimal CD ZMAX", tip_array = 8*[True]):
         return [dispense(plate.gridsite,
                          col,
-                         column_mask,
-                         volumes*tip_array,
+                         list(column_mask),
+                         volumes*np.array(tip_array),
                          liquid_class,
                          labware=plate.labware,
                          spacing=plate.labware.spacing)]
@@ -84,63 +67,45 @@ class LiHA:
               move_liha(ethanol, 1, local=True, labware="trough100")]
         return WL
 
-    def mix(self, plate, col, volumes, cycles,  liquid_class=False, column_mask=False, tip_array=False):
-        tip_array, liquid_class, column_mask = self.fill_standard_params(
-            plate, liquid_class, tip_array, column_mask)
+    def mix(self, plate, col, volumes, cycles,  column_mask, tip_array=8*True):
+        worklist = []
         for _ in range(cycles):
-            worklist = self.aspirate(
-                plate, col, volumes, tip_array=tip_array, liquid_class=liquid_class, column_mask=column_mask, waste_volume=0)
-            worklist += self.dispense(plate, col, volumes, tip_array=tip_array,
-                                      liquid_class=self.minimal_fd, column_mask=column_mask)
+            worklist += self.aspirate(
+                plate, col, volumes,column_mask, tip_array=tip_array, liquid_class=self.liquid_mix, waste_volume=0)    
+            worklist += self.dispense(plate, col, volumes, column_mask, tip_array=tip_array,
+                                      liquid_class=self.minimal_fd)
         return worklist
 
-    def dilution_row(self, plate, well_volume=200, start_col=1, stop_at_col=12, n_mix=3, tip_array=False, dilution_factor=10, liquid_class=False, column_mask=False):
-        tip_array, liquid_class, column_mask = self.fill_standard_params(
-            plate, liquid_class, tip_array, column_mask)
+    def dilution_row(self, plate, column_mask, well_volume=200, start_col=1, stop_at_col=12, n_mix=3, tip_array=8*[True], dilution_factor=10, liquid_class="Minimal CD ZMAX"):
         mix_volume = 0.6*well_volume
         transfer_volume = well_volume/dilution_factor
         worklist = []
         for i in range(start_col, stop_at_col):
             print(i, "to", i+1)
             worklist += self.aspirate(plate, i,
-                                      transfer_volume*tip_array, liquid_class=liquid_class, column_mask=column_mask)
+                                      transfer_volume*tip_array, column_mask, liquid_class=liquid_class)
             worklist += self.dispense(plate, i+1,
-                                      transfer_volume*tip_array, "Minimal CD ZMAX", column_mask=column_mask)
-            worklist += self.mix(plate, i+1, mix_volume, n_mix,
-                                 tip_array=tip_array, column_mask=column_mask)
+                                      transfer_volume*tip_array, column_mask, liquid_class = liquid_class)
+            worklist += self.mix(plate, i+1, mix_volume, n_mix, column_mask,
+                                 tip_array=tip_array)
             worklist += self.simple_wash()
         return worklist
 
-    def fill_96_well_plate(self, src_plate, dest_plate, fill_volume, start_col=1, end_col=12, src_col=1):
+    def fill_96_well_plate(self, src_plate, dest_plate, fill_volume, column_mask, start_col=1, end_col=12, src_col=1):
         wl = self.simple_wash()
         vmax = 950
         n = math.floor(vmax/fill_volume)
         count = 0
         for col in range(start_col, end_col):
             if count == 0:
-                wl.extend(self.aspirate(src_plate, src_col, n*fill_volume))
+                wl.extend(self.aspirate(src_plate, src_col, n*fill_volume, column_mask))
                 count = n
 
             wl.extend(self.dispense(dest_plate, col,
-                      fill_volume, liquid_class=self.minimal_fd))
+                      fill_volume, column_mask, liquid_class=self.minimal_fd))
             count -= 1
         wl.extend(self.simple_wash())
         return wl
-
-    def fill_standard_params(self, plate, liquid_class, tip_array, column_mask):
-        if type(column_mask) != list:
-            rows = plate.labware.rows
-            if rows == 8:
-                column_mask = 8*[True]
-            elif rows == 16:
-                column_mask = 8*[True, False]
-            else:
-                Exception("pls provide column mask")
-        if not liquid_class:
-            liquid_class = self.standard_liquid_class
-        if type(tip_array) != list:
-            tip_array = self.tip_array
-        return tip_array, liquid_class, column_mask
 
     def add_pickolo(self, pickolo):
         self.pickolo = pickolo
@@ -151,33 +116,12 @@ class LiHA:
         WL += self.pickolo.take_photo(img_name, close_pickolo=close_pickolo)
         return WL
 
-    def close_pickolo(self):
-        return [self.pickolo.close_pickolo()]
-
-    def set_minimal_cd(self, minimal_cd):
-        self.standard_liquid_class = minimal_cd
-
-    def set_liha_mix(self, liha_mix):
-        self.liquid_class_mix = liha_mix
-
-    def set_minimal_fd(self, minimal_fd):
-        self.minimal_fd = minimal_fd
-
-    def set_liha_agar(self, liha_Agar):
-        self.liha_Agar = liha_Agar
-
-    def set_zmax(self, ZMax):
-        self.ZMax = ZMax
-
-    def set_waste_volume(self, waste_volume):
-        self.waste_volume = waste_volume
-
-    def spot(self, plate, volume,  tip_array = np.array(8*[True])):
+    def spot(self, plate, volume, column_mask, tip_array = np.array(8*[True])):
         wl = self.dispense(
                 plate,
                 1,
                 volume/2,
-                column_mask = np.array(tip_array),
+                column_mask,
                 tip_array=np.array(tip_array),
                 liquid_class="Minimal CD Agar"
             )
@@ -186,7 +130,7 @@ class LiHA:
                 plate,
                 2,
                 volume/2,
-                column_mask = np.array(tip_array),
+                column_mask,
                 tip_array=np.array(tip_array),
                 liquid_class="Minimal CD Agar"
             )
@@ -195,16 +139,3 @@ class LiHA:
             self.move_liha_to_lighttable()
         )
         return wl
-
-    def transfer_and_spot(self, src_plate, src_col:int, target_palte, tip_arr:list, vol = 10):
-        WL = []
-        WL.extend(
-            self.aspirate(
-                src_plate,
-                src_col,
-                vol,
-                column_mask = np.array(tip_arr),
-                tip_array = np.array(tip_arr)
-        ))
-        WL.extend(self.spot(target_palte, vol, tip_array = tip_arr))
-        return WL

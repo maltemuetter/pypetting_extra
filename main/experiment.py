@@ -4,6 +4,7 @@ import shutil
 from .worklist import Worklist
 from .protocol import Protocol
 from .platereader import Measurement
+from .location import Location
 import pandas as pd
 
 class Experiment:
@@ -20,7 +21,7 @@ class Experiment:
 
         self.folders = {
             "exp": [exp_name],
-            "log_files": [exp_name, "log_files"],
+            "notes": [exp_name, "notes"],
             "wl": [exp_name, "worklists"],
         }
 
@@ -74,7 +75,7 @@ class Experiment:
         liha.pickolo.set_img_folder(self.windows_paths[folder_key])
 
     def setup_protocol(self, script_name="time_log.py", file_name="timelog.csv"):
-        logfile_path = self.windows_paths["log_files"] + "\\" + file_name
+        logfile_path = self.windows_paths["notes"] + "\\" + file_name
         script_path = self.windows_paths["cmd_scripts"] + "\\" + script_name
         return Protocol(script_path, logfile_path, self.windows_paths["python"])
 
@@ -86,8 +87,12 @@ class Experiment:
             self.paths["reader_settings"], settings_file_name)
         output_folder = self.windows_paths[folder_key]
         return Measurement(settings_path, output_folder)
-
-    def save_csv(self, df:pd.DataFrame, filename, folder = "log_files"):
+    
+    def setup_location_file(self, folderkey = "notes", filename = "locations.csv"):
+        filepath = os.path.join(self.paths[folderkey], filename)
+        return Location(filepath)
+       
+    def save_csv(self, df:pd.DataFrame, filename, folder = "notes"):
         filepath = os.path.join(self.paths[folder], filename)
         df.to_csv(filepath, index=False)
 

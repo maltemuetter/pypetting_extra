@@ -6,7 +6,7 @@ class ROMA:
     def __init__(self):
         pass
 
-    def move_roma_to_home():
+    def move_roma_to_home(self):
         return direct_command("ROMA(2,80,75,0,0,0,150,1,0);")
 
     def add_incubator(self, storex):
