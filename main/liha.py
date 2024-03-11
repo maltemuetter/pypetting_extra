@@ -8,7 +8,6 @@ class LiHA:
     def __init__(self):
         self.all_tips = np.array([True] * 8)
         self.minimal_fd = "Minimal FD"
-        self.liquid_mix = "LB CD ZMAX FAST"
 
     def aspirate(
         self,
@@ -127,7 +126,16 @@ class LiHA:
         ]
         return WL
 
-    def mix(self, plate, col, volumes, cycles, column_mask, tip_array=8 * True):
+    def mix(
+        self,
+        plate,
+        col,
+        volumes,
+        cycles,
+        column_mask,
+        tip_array=8 * True,
+        liquid_class="Minimal CD ZMAX",
+    ):
         worklist = []
         for _ in range(cycles):
             worklist += self.aspirate(
@@ -136,7 +144,7 @@ class LiHA:
                 volumes,
                 column_mask,
                 tip_array=tip_array,
-                liquid_class=self.liquid_mix,
+                liquid_class=liquid_class,
                 waste_volume=0,
             )
             worklist += self.dispense(
@@ -145,7 +153,7 @@ class LiHA:
                 volumes,
                 column_mask,
                 tip_array=tip_array,
-                liquid_class=self.liquid_mix,
+                liquid_class=self.minimal_fd,
             )
         return worklist
 
@@ -153,7 +161,7 @@ class LiHA:
         self,
         plate,
         column_mask,
-        well_volume: int = 200,
+        well_volume: int = 250,
         start_col: int = 1,
         stop_at_col: int = 12,
         n_mix: int = 3,
@@ -201,7 +209,6 @@ class LiHA:
         count = 0
         wl = []
         for i, dest_col in enumerate(range(start_col, end_col + 1)):
-            print(i, dest_col)
             if count == 0:
                 di = len(range(start_col, end_col + 1)) - i
                 wl.extend(
