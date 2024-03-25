@@ -2,6 +2,7 @@ from .base import direct_command
 import numpy as np
 from pypetting import aspirate, dispense, wash, move_liha, GridSite
 import math
+from numpy.typing import ArrayLike
 
 
 class LiHA:
@@ -18,8 +19,9 @@ class LiHA:
         liquid_class="Minimal CD ZMAX",
         tip_array=8 * [True],
         waste_volume=0,
+        retract=True,
     ):
-        WL = [
+        wl = [
             aspirate(
                 plate.gridsite,
                 col,
@@ -27,11 +29,10 @@ class LiHA:
                 (volumes + waste_volume) * np.array(tip_array),
                 liquid_class,
                 labware=plate.labware,
-                spacing=plate.labware.spacing,
             )
         ]
         if waste_volume != 0:
-            WL += [
+            wl += [
                 dispense(
                     plate.gridsite,
                     col,
@@ -39,10 +40,28 @@ class LiHA:
                     waste_volume * np.array(tip_array),
                     liquid_class=self.minimal_fd,
                     labware=plate.labware,
+                )
+            ]
+        if retract:
+            if plate.labware.rows == 8:
+                positions = 8 * [True]
+            elif plate.labware.rows == 16:
+                alignment = list(column_mask).index(True)
+                positions = 8 * list(column_mask[alignment : alignment + 2])
+            else:
+                Exception(
+                    "Retraction: move liha currently only works for 8row or 16 row plates (e.g. 96w or 384w). Set retract = False to solve"
+                )
+            wl += [
+                self.move_liha(
+                    plate,
+                    column=col,
+                    positions=positions,
+                    local=True,
                     spacing=plate.labware.spacing,
                 )
             ]
-        return WL
+        return wl
 
     def dispense(
         self,
@@ -52,8 +71,9 @@ class LiHA:
         column_mask,
         liquid_class="Minimal CD ZMAX",
         tip_array=8 * [True],
+        retract=True,
     ):
-        return [
+        wl = [
             dispense(
                 plate.gridsite,
                 col,
@@ -61,9 +81,28 @@ class LiHA:
                 volumes * np.array(tip_array),
                 liquid_class,
                 labware=plate.labware,
-                spacing=plate.labware.spacing,
             )
         ]
+        if retract:
+            if plate.labware.rows == 8:
+                positions = 8 * [True]
+            elif plate.labware.rows == 16:
+                alignment = list(column_mask).index(True)
+                positions = 8 * list(column_mask[alignment : alignment + 2])
+            else:
+                Exception(
+                    "Retraction: move liha currently only works for 8row or 16 row plates (e.g. 96w or 384w). Set retract = False to solve"
+                )
+            wl += [
+                self.move_liha(
+                    plate,
+                    column=col,
+                    positions=positions,
+                    local=True,
+                    spacing=plate.labware.spacing,
+                )
+            ]
+        return wl
 
     def move_liha_to_lighttable(self):
         return direct_command('MoveLiha(1,46,0,1,"01011",0,4,0,10,0,0);')
@@ -71,8 +110,27 @@ class LiHA:
 
     # return move_liha(self.pickolo.camera_position, 1)
 
-    def move_liha(self, plate, column=1):
-        return move_liha(plate.gridsite, column)
+    def move_liha(
+        self,
+        plate,
+        column=1,
+        spacing=1,
+        positions=8 * [True],
+        local: bool = False,
+        z_pos: int = 0,
+        speed: int = 10,
+    ):
+
+        return move_liha(
+            grid_site=plate.gridsite,
+            column=column,
+            labware=plate.labware,
+            positions=positions,
+            spacing=spacing,
+            local=local,
+            z_pos=z_pos,
+            speed=speed,
+        )
 
     def simple_wash(self):
         h2o2 = GridSite(30, 1, "")
@@ -133,7 +191,7 @@ class LiHA:
         volumes,
         cycles,
         column_mask,
-        tip_array=8 * True,
+        tip_array=8 * [True],
         liquid_class="Minimal CD ZMAX",
     ):
         worklist = []
@@ -146,6 +204,7 @@ class LiHA:
                 tip_array=tip_array,
                 liquid_class=liquid_class,
                 waste_volume=0,
+                retract=False,
             )
             worklist += self.dispense(
                 plate,
@@ -153,7 +212,7 @@ class LiHA:
                 volumes,
                 column_mask,
                 tip_array=tip_array,
-                liquid_class=self.minimal_fd,
+                liquid_class=liquid_class,
             )
         return worklist
 
@@ -287,6 +346,7 @@ class LiHA:
             column_mask,
             tip_array=np.array(tip_array),
             liquid_class="Minimal CD Agar",
+            retract=False,
         )
 
         wl += self.dispense(
@@ -296,6 +356,7 @@ class LiHA:
             column_mask,
             tip_array=np.array(tip_array),
             liquid_class="Minimal CD Agar",
+            retract=False,
         )
 
         wl.append(self.move_liha_to_lighttable())
