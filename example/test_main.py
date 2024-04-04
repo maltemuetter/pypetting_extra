@@ -6,11 +6,11 @@ import os
 # Soft Setup
 folder = "test_experiments"
 exp_name = "test1"
-exp_path = os.path.join(os.getcwd(), folder)
+exp_path = "/Users/malte/polybox/Shared/Robot-Shared/" + folder
 experiment = Experiment(
     exp_name,
     exp_path,
-    "C:\\Users\\COMPUTER\\polybox\\Robot-Malte\\Luminescence\\" + folder,
+    "C:\\Users\\COMPUTER\\polybox\\Robot-Shared\\" + folder,
 )
 experiment.clone_folder("cmd_scripts")
 protocol = experiment.setup_protocol()
