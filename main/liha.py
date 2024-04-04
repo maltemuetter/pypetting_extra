@@ -9,6 +9,7 @@ class LiHA:
     def __init__(self):
         self.all_tips = np.array([True] * 8)
         self.minimal_fd = "Minimal FD"
+        self.tip_vol_max = 250
 
     def aspirate(
         self,
@@ -31,34 +32,17 @@ class LiHA:
                 labware=plate.labware,
             )
         ]
-        if waste_volume != 0:
+
+        if retract:
             wl += [
-                dispense(
+                move_liha(
                     plate.gridsite,
                     col,
-                    list(column_mask),
-                    waste_volume * np.array(tip_array),
-                    liquid_class=self.minimal_fd,
-                    labware=plate.labware,
-                )
-            ]
-        if retract:
-            if plate.labware.rows == 8:
-                positions = 8 * [True]
-            elif plate.labware.rows == 16:
-                alignment = list(column_mask).index(True)
-                positions = 8 * list(column_mask[alignment : alignment + 2])
-            else:
-                Exception(
-                    "Retraction: move liha currently only works for 8row or 16 row plates (e.g. 96w or 384w). Set retract = False to solve"
-                )
-            wl += [
-                self.move_liha(
-                    plate,
-                    column=col,
-                    positions=positions,
+                    column_mask,
+                    tip_array=tip_array,
                     local=True,
                     spacing=plate.labware.spacing,
+                    labware=plate.labware,
                 )
             ]
         return wl
@@ -84,22 +68,15 @@ class LiHA:
             )
         ]
         if retract:
-            if plate.labware.rows == 8:
-                positions = 8 * [True]
-            elif plate.labware.rows == 16:
-                alignment = list(column_mask).index(True)
-                positions = 8 * list(column_mask[alignment : alignment + 2])
-            else:
-                Exception(
-                    "Retraction: move liha currently only works for 8row or 16 row plates (e.g. 96w or 384w). Set retract = False to solve"
-                )
             wl += [
-                self.move_liha(
-                    plate,
-                    column=col,
-                    positions=positions,
+                move_liha(
+                    plate.gridsite,
+                    col,
+                    column_mask,
+                    tip_array=tip_array,
                     local=True,
                     spacing=plate.labware.spacing,
+                    labware=plate.labware,
                 )
             ]
         return wl
@@ -113,24 +90,27 @@ class LiHA:
     def move_liha(
         self,
         plate,
+        column_mask,
         column=1,
         spacing=1,
-        positions=8 * [True],
+        tip_array=8 * [True],
         local: bool = False,
         z_pos: int = 0,
         speed: int = 10,
     ):
 
-        return move_liha(
-            grid_site=plate.gridsite,
-            column=column,
-            labware=plate.labware,
-            positions=positions,
-            spacing=spacing,
-            local=local,
-            z_pos=z_pos,
-            speed=speed,
-        )
+        return [
+            move_liha(
+                plate.gridsite,
+                column,
+                column_mask,
+                tip_array=tip_array,
+                local=local,
+                spacing=spacing,
+                z_pos=z_pos,
+                speed=speed,
+            )
+        ]
 
     def simple_wash(self):
         h2o2 = GridSite(30, 1, "")
@@ -180,7 +160,9 @@ class LiHA:
             dispense(
                 h2o2, 1, self.all_tips, 900 * self.all_tips, water, labware="trough100"
             ),
-            move_liha(ethanol, 1, local=True, labware="trough100"),
+            move_liha(
+                ethanol, 1, column_mask=8 * [True], local=True, labware="trough100"
+            ),
         ]
         return WL
 
@@ -263,8 +245,7 @@ class LiHA:
         end_col=12,
         src_col=1,
     ):
-        vmax = 950
-        n = math.floor(vmax / fill_volume)
+        n = math.floor(self.tip_vol_max / fill_volume)
         count = 0
         wl = []
         for i, dest_col in enumerate(range(start_col, end_col + 1)):
@@ -302,8 +283,7 @@ class LiHA:
         column_mask_src=8 * [True],
     ):
         wl = []
-        vmax = 950
-        nmax = math.floor(vmax / fill_volume)
+        nmax = math.floor(self.tip_vol_max / fill_volume)
         count = 0
         for i, n in enumerate(range(n_cols)):
             dest_col = start_col + step * n

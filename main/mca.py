@@ -1,4 +1,11 @@
-from pypetting import mca_aspirate, mca_dispense, start_timer, wait_timer, mca_drop_tips, mca_get_tips
+from pypetting import (
+    mca_aspirate,
+    mca_dispense,
+    start_timer,
+    wait_timer,
+    mca_drop_tips,
+    mca_get_tips,
+)
 from pypetting.mca import _mca_well_select
 from itertools import product
 
@@ -13,7 +20,7 @@ class MCA:
         self.timer = timer
         self.liquid_class = liquid_class
 
-    def add_tips(self, tips:list):
+    def add_tips(self, tips: list):
         self.tips.append(tips)
 
     def add_pintool_setup(self, pintool_setup):
@@ -51,35 +58,38 @@ class MCA:
     def aspirate(self, plate, row, col, volume, liquid_class=False):
         if not liquid_class:
             liquid_class = self.liquid_class
-        WL = [mca_aspirate(plate.gridsite,
-                           row,
-                           col,
-                           volume + self.extra_vol,
-                           liquid_class,
-                           labware=plate.labware)]
-        WL += self.dispense(plate, row, col,
-                            self.extra_vol, liquid_class)
+        WL = [
+            mca_aspirate(
+                plate.gridsite,
+                row,
+                col,
+                volume + self.extra_vol,
+                liquid_class,
+                labware=plate.labware,
+            )
+        ]
+        WL += self.dispense(plate, row, col, self.extra_vol, liquid_class)
         return WL
 
     def dispense(self, plate, row, col, volume, liquid_class=False):
         if not liquid_class:
             liquid_class = self.liquid_class
-        WL = [mca_dispense(plate.gridsite,
-                           row,
-                           col,
-                           volume,
-                           liquid_class,
-                           labware=plate.labware)]
+        WL = [
+            mca_dispense(
+                plate.gridsite, row, col, volume, liquid_class, labware=plate.labware
+            )
+        ]
         return WL
 
     def replicate_with_pintool(self, source, destination, n=2, dip_speed=30):
-        WL = self.dip(source, n=n, dip_speed=dip_speed) + \
-            self.dip(destination, n=n, dip_speed=dip_speed)
+        WL = self.dip(source, n=n, dip_speed=dip_speed) + self.dip(
+            destination, n=n, dip_speed=dip_speed
+        )
         return WL
 
     def dip(self, plate, n=2, dip_speed=60, wait_time=1):
         wl = [self.move(plate)]
-        for _ in range(n-1):
+        for _ in range(n - 1):
             wl.append(self.move(plate, z_pos=3, speed=dip_speed, local=4))
             wl.append(start_timer(self.timer))
             wl.append(wait_timer(self.timer, wait_time))
@@ -126,12 +136,15 @@ class MCA:
         WL += self.dry(dt=dry_time)
         return WL
 
-    def move(self, plate,
-             col: int = 1,
-             row: int = 1,
-             z_pos: int = 0,
-             speed: int = 10,
-             local: int = 0):
+    def move(
+        self,
+        plate,
+        col: int = 1,
+        row: int = 1,
+        z_pos: int = 0,
+        speed: int = 10,
+        local: int = 0,
+    ):
         labware = plate.labware
         spacing = labware.spacing
         grid_site = plate.gridsite
@@ -148,29 +161,29 @@ class MCA:
         )
         return command
 
-    def fill_96plate(self, src, dest, volume, get_tips=True, tip_idx=0, liquid_class=False):
+    def fill_96plate(
+        self, src, dest, volume, get_tips=True, tip_idx=0, liquid_class=False
+    ):
         wl = []
         if get_tips:
             wl.append(self.get_tips(tip_idx=tip_idx))
 
-        wl.extend(self.aspirate(src, 1, 1,
-                                volume, liquid_class=liquid_class))
-        wl.extend(self.dispense(dest, 1, 1,
-                                volume, liquid_class=liquid_class))
+        wl.extend(self.aspirate(src, 1, 1, volume, liquid_class=liquid_class))
+        wl.extend(self.dispense(dest, 1, 1, volume, liquid_class=liquid_class))
         if get_tips:
             wl.append(self.return_tips())
         return wl
 
-    def fill_384plate(self, src, dest, volume, tip_idx=0, liquid_class=False, get_tips=True):
+    def fill_384plate(
+        self, src, dest, volume, tip_idx=0, liquid_class=False, get_tips=True
+    ):
         wl = []
-        if get_tips:
+        if get_tips and not self.tips_mounted:
             wl.append(self.get_tips(tip_idx=tip_idx))
 
         for row, col in product([1, 2], [1, 2]):
-            wl.extend(self.aspirate(src, row, col,
-                                    volume, liquid_class=liquid_class))
-            wl.extend(self.dispense(dest, row, col,
-                                    volume, liquid_class=liquid_class))
+            wl.extend(self.aspirate(src, row, col, volume, liquid_class=liquid_class))
+            wl.extend(self.dispense(dest, row, col, volume, liquid_class=liquid_class))
         if get_tips:
             wl.append(self.return_tips())
         return wl

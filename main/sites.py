@@ -1,13 +1,15 @@
 from pypetting import GridSite
 from .plate import Plate
 
+
 class PositionMixin:
     def occupy(self, labware):
         self.labware = labware
         self.occupied = True
-    
+
     def clear(self):
         self.occupied = False
+
 
 class Site(PositionMixin):
     def __init__(self, grid: int, name: str, site: int):
@@ -23,19 +25,21 @@ class Site(PositionMixin):
         else:
             store_pos = None
         plate = Plate(
-            name=name, 
+            name=name,
             start_gridsite=self.gridsite,
-            labware=labware, 
-            incubating=False, 
-            store_pos=store_pos)
+            labware=labware,
+            incubating=False,
+            store_pos=store_pos,
+        )
         self.occupy(plate)
         return plate
 
     def __str__(self):
         return f"Site(grid={self.grid}, name={self.carrier_name}, site={self.site}, occupied={self.occupied})"
 
+
 class CartSite(PositionMixin):
-    def __init__(self, grid: int, name: str, site: int, cart_num:int):
+    def __init__(self, grid: int, name: str, site: int, cart_num: int):
         self.grid = grid
         self.carrier_name = name
         self.site = site
@@ -50,13 +54,14 @@ class CartSite(PositionMixin):
         else:
             store_pos = None
         plate = Plate(
-            name=name, 
+            name=name,
             start_gridsite=self.gridsite,
-            labware=labware, 
-            incubating=True, 
-            storex_cart=self.cart_num, 
+            labware=labware,
+            incubating=True,
+            storex_cart=self.cart_num,
             cart_site=self.cart_site,
-            store_pos=store_pos)
+            store_pos=store_pos,
+        )
         self.occupy(plate)
         return plate
 

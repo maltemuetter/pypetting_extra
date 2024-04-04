@@ -92,8 +92,6 @@ class Carrier(ContainerMixin):
             f"Carrier(name={self.name!r}, "
             f"grid={self.grid}, "
             f"number_of_sites={len(self.sites)}, "
-            f"storex_gridsite={self.storex_gridsite}, "
-            f"cart_num={self.cart_num})"
         )
 
 

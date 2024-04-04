@@ -1,0 +1,11 @@
+C;INIT - gwl created by pypetting
+B;Comment("moved_dilution_plate");
+B;Execute(C:\Users\COMPUTER\AppData\Local\Programs\Python\Python310\python.exe C:\Users\COMPUTER\polybox\Robot-Malte\Luminescence\test_experiments\test1\cmd_scripts\time_log.py --message moved_dilution_plate --note_path C:\Users\COMPUTER\polybox\Robot-Malte\Luminescence\test_experiments\test1\notes\timelog.csv,0,"py_return",2);
+B;Transfer_Rack("14","33",0,1,1,0,1,"14","96 Well Greiner SC","Narrow","","","Shelf 8x4Pos","Shelf 8x4Pos","MP 2Pos Fixed","32","32","1");
+B;Aspirate(255,"Minimal CD ZMAX","10.0","10.0","10.0","10.0","10.0","10.0","10.0","10.0","0","0","0","0",33,0,1,"0c08¯1000000000000",0,0);
+B;MoveLiha(255,33,0,1,"0c08¯1000000000000",1,0,0,10,0,0);
+B;Comment("transferred_medium");
+B;Execute(C:\Users\COMPUTER\AppData\Local\Programs\Python\Python310\python.exe C:\Users\COMPUTER\polybox\Robot-Malte\Luminescence\test_experiments\test1\cmd_scripts\time_log.py --message transferred_medium --note_path C:\Users\COMPUTER\polybox\Robot-Malte\Luminescence\test_experiments\test1\notes\timelog.csv,0,"py_return",2);
+B;Dispense(255,"Minimal CD ZMAX","10.0","10.0","10.0","10.0","10.0","10.0","10.0","10.0","0","0","0","0",33,0,1,"0c080®300000000000",0,0);
+B;MoveLiha(255,33,0,1,"0c080®300000000000",1,0,0,10,0,0);
+B;Transfer_Rack("33","14",0,1,1,0,0,"14","96 Well Greiner SC","Narrow","","","MP 2Pos Fixed","Shelf 8x4Pos","Shelf 8x4Pos","1","32","32");
