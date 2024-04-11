@@ -1,7 +1,6 @@
 from pypetting_extra import Experiment
 from pypetting_extra import default_worktable as worktable
 from pypetting.labware import labwares
-import os
 
 # Soft Setup
 folder = "test_experiments"

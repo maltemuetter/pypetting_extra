@@ -21,7 +21,11 @@ class LiHA:
         tip_array=8 * [True],
         waste_volume=0,
         retract=True,
+        check_vol=True,
     ):
+        if type(volumes) == int:
+            if volumes > 250:
+                raise Exception("use liha only for aspirating max 250 ul per tip")
         wl = [
             aspirate(
                 plate.gridsite,
@@ -125,7 +129,7 @@ class LiHA:
                 ethanol,
                 1,
                 self.all_tips,
-                900 * self.all_tips,
+                300 * self.all_tips,
                 etoh,
                 labware="trough100",
             ),
@@ -133,7 +137,7 @@ class LiHA:
                 ethanol,
                 1,
                 self.all_tips,
-                900 * self.all_tips,
+                300 * self.all_tips,
                 etoh,
                 labware="trough100",
             ),
@@ -142,7 +146,7 @@ class LiHA:
                 ethanol,
                 1,
                 self.all_tips,
-                900 * self.all_tips,
+                300 * self.all_tips,
                 etoh,
                 labware="trough100",
             ),
@@ -150,15 +154,15 @@ class LiHA:
                 ethanol,
                 1,
                 self.all_tips,
-                900 * self.all_tips,
+                300 * self.all_tips,
                 etoh,
                 labware="trough100",
             ),
             aspirate(
-                h2o2, 1, self.all_tips, 900 * self.all_tips, water, labware="trough100"
+                h2o2, 1, self.all_tips, 300 * self.all_tips, water, labware="trough100"
             ),
             dispense(
-                h2o2, 1, self.all_tips, 900 * self.all_tips, water, labware="trough100"
+                h2o2, 1, self.all_tips, 300 * self.all_tips, water, labware="trough100"
             ),
             move_liha(
                 ethanol, 1, column_mask=8 * [True], local=True, labware="trough100"
@@ -208,8 +212,8 @@ class LiHA:
         n_mix: int = 3,
         tip_array=8 * [True],
         dilution_factor=10,
-        liquid_class="Minimal FD",
-        liquid_class_asp="Minimal CD ZMAX",
+        liquid_class="LB CD ZMAX FAST",
+        liquid_class_asp="LB CD ZMAX FAST",
     ):
         mix_volume = 0.6 * well_volume
         transfer_volume = well_volume / dilution_factor
@@ -281,6 +285,7 @@ class LiHA:
         src_col=1,
         step=2,
         column_mask_src=8 * [True],
+        liquid_class="Minimal FD",
     ):
         wl = []
         nmax = math.floor(self.tip_vol_max / fill_volume)
@@ -292,7 +297,11 @@ class LiHA:
 
                 wl.extend(
                     self.aspirate(
-                        src_plate, src_col, min(di, nmax) * fill_volume, column_mask_src
+                        src_plate,
+                        src_col,
+                        min(di, nmax) * fill_volume,
+                        column_mask_src,
+                        liquid_class=liquid_class,
                     )
                 )
                 count = nmax
@@ -303,7 +312,7 @@ class LiHA:
                     dest_col,
                     fill_volume,
                     column_mask_dest,
-                    liquid_class=self.minimal_fd,
+                    liquid_class=liquid_class,
                 )
             )
             count -= 1
