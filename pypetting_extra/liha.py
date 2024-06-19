@@ -23,9 +23,13 @@ class LiHA:
         retract=True,
         check_vol=True,
     ):
-        if type(volumes) == int:
-            if volumes > 250:
-                raise Exception("use liha only for aspirating max 250 ul per tip")
+        self.column_labware_check(plate, column_mask)
+        if check_vol:
+            if type(volumes) == int:
+                if volumes > 250:
+                    raise Exception(
+                        f"use liha only for aspirating max 250 ul per tip. volume: {volumes}"
+                    )
         wl = [
             aspirate(
                 plate.gridsite,
@@ -61,6 +65,7 @@ class LiHA:
         tip_array=8 * [True],
         retract=True,
     ):
+        self.column_labware_check(plate, column_mask)
         wl = [
             dispense(
                 plate.gridsite,
@@ -170,6 +175,44 @@ class LiHA:
         ]
         return WL
 
+    def fast_wash(self):
+        h2o2 = GridSite(30, 1, "")
+        ethanol = GridSite(30, 2, "")
+
+        water = "sterileWash_N_H2O"
+        etoh = "sterileWash_N_EtOH"
+
+        WL = [
+            wash(1, 0.1, 31),
+            aspirate(
+                ethanol,
+                1,
+                self.all_tips,
+                300 * self.all_tips,
+                etoh,
+                labware="trough100",
+            ),
+            dispense(
+                ethanol,
+                1,
+                self.all_tips,
+                300 * self.all_tips,
+                etoh,
+                labware="trough100",
+            ),
+            wash(2, 1, 31),
+            aspirate(
+                h2o2, 1, self.all_tips, 250 * self.all_tips, water, labware="trough100"
+            ),
+            dispense(
+                h2o2, 1, self.all_tips, 250 * self.all_tips, water, labware="trough100"
+            ),
+            move_liha(
+                ethanol, 1, column_mask=8 * [True], local=True, labware="trough100"
+            ),
+        ]
+        return WL
+
     def mix(
         self,
         plate,
@@ -178,7 +221,7 @@ class LiHA:
         cycles,
         column_mask,
         tip_array=8 * [True],
-        liquid_class="Minimal CD ZMAX",
+        liquid_class="Minimal FD mix",
     ):
         worklist = []
         for _ in range(cycles):
@@ -201,6 +244,46 @@ class LiHA:
                 liquid_class=liquid_class,
             )
         return worklist
+
+    def vol_transfer(
+        self,
+        src_plate,
+        src_col,
+        dest_plate,
+        dest_col,
+        tip_vol,
+        column_mask,
+        liquid_class="Minimal CD ZMAX",
+        tip_array=8 * [True],
+    ):
+        n = math.ceil(tip_vol / self.tip_vol_max)
+        wl = []
+        rest_vol = tip_vol
+        for _ in range(n):
+            vol = min(rest_vol, self.tip_vol_max)
+            wl.extend(
+                self.aspirate(
+                    src_plate,
+                    src_col,
+                    vol,
+                    column_mask,
+                    liquid_class=liquid_class,
+                    tip_array=tip_array,
+                    retract=False,
+                )
+            )
+            wl.extend(
+                self.dispense(
+                    dest_plate,
+                    dest_col,
+                    vol,
+                    column_mask,
+                    liquid_class=liquid_class,
+                    tip_array=tip_array,
+                )
+            )
+            rest_vol = rest_vol - vol
+        return wl
 
     def dilution_row(
         self,
@@ -225,6 +308,7 @@ class LiHA:
                 transfer_volume,
                 column_mask,
                 liquid_class=liquid_class_asp,
+                tip_array=tip_array,
             )
             worklist += self.dispense(
                 plate,
@@ -232,6 +316,7 @@ class LiHA:
                 transfer_volume,
                 column_mask,
                 liquid_class=liquid_class,
+                tip_array=tip_array,
             )
             worklist += self.mix(
                 plate, i + 1, mix_volume, n_mix, column_mask, tip_array=tip_array
@@ -245,33 +330,59 @@ class LiHA:
         dest_plate,
         fill_volume,
         column_mask,
+        liquid_class="Minimal FD",
+        tip_array=8 * [True],
         start_col=1,
         end_col=12,
         src_col=1,
     ):
-        n = math.floor(self.tip_vol_max / fill_volume)
-        count = 0
+        columns = list(range(start_col, end_col + 1))
+        wells_per_aspirate = math.floor(self.tip_vol_max / fill_volume)
+
         wl = []
-        for i, dest_col in enumerate(range(start_col, end_col + 1)):
-            if count == 0:
-                di = len(range(start_col, end_col + 1)) - i
+        counter = 0
+        for i, dest_col in enumerate(columns):
+            if wells_per_aspirate:
+                if counter == 0:
+                    number_columns_left = len(columns) - i
+                    n_aspirate = min(number_columns_left, wells_per_aspirate)
+                    wl.extend(
+                        self.aspirate(
+                            src_plate,
+                            src_col,
+                            n_aspirate * fill_volume,
+                            column_mask,
+                            liquid_class=liquid_class,
+                            tip_array=tip_array,
+                        )
+                    )
+                    counter = n_aspirate
+
                 wl.extend(
-                    self.aspirate(
-                        src_plate, src_col, min(n, di) * fill_volume, column_mask
+                    self.dispense(
+                        dest_plate,
+                        dest_col,
+                        fill_volume,
+                        column_mask,
+                        liquid_class=liquid_class,
+                        tip_array=tip_array,
                     )
                 )
-                count = n
-
-            wl.extend(
-                self.dispense(
-                    dest_plate,
-                    dest_col,
-                    fill_volume,
-                    column_mask,
-                    liquid_class=self.minimal_fd,
+                counter -= 1
+            else:
+                wl.extend(
+                    self.vol_transfer(
+                        src_plate,
+                        src_col,
+                        dest_plate,
+                        dest_col,
+                        fill_volume,
+                        column_mask,
+                        liquid_class=liquid_class,
+                        tip_array=tip_array,
+                    )
                 )
-            )
-            count -= 1
+
         return wl
 
     def fill_384_well_rep(
@@ -287,6 +398,7 @@ class LiHA:
         column_mask_src=8 * [True],
         liquid_class="Minimal FD",
     ):
+        raise Exception("function out of date. fill96 was updated. Finish coding")
         wl = []
         nmax = math.floor(self.tip_vol_max / fill_volume)
         count = 0
@@ -350,3 +462,8 @@ class LiHA:
 
         wl.append(self.move_liha_to_lighttable())
         return wl
+
+    @staticmethod
+    def column_labware_check(plate, column_mask):
+        if not len(column_mask) == plate.labware.rows:
+            Exception("column_mask doesnt fit number of plate rows.")

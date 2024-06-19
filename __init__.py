@@ -1,17 +1,23 @@
-from .main.tilter import PlateTilter
-from .main.worklist import Worklist
-from .main.experiment import Experiment
-from .main.container import Device, Carrier, Cartridge
-from .main.mca import MCA
-from .main.liha import LiHA
-from .main.pintool import PintoolSetup, PintoolDryer
-from .main.base import direct_command
-from .main.storex import StoreX
-from .main.platereader import InfinitePlateReader
-from .main.protocol import Protocol
-from .main.roma import ROMA
-from .main.plate import Plate
-from .main.worktable import Worktable
-from .main.pickolo import Pickolo
+from .pypetting_extra.tilter import PlateTilter
+from .pypetting_extra.worklist import Worklist
+from .pypetting_extra.experiment import Experiment
+from .pypetting_extra.container import Device, Carrier, Cartridge
+from .pypetting_extra.mca import MCA
+from .pypetting_extra.liha import LiHA
+from .pypetting_extra.pintool import PintoolSetup, PintoolDryer
+from .pypetting_extra.base import direct_command
+from .pypetting_extra.storex import StoreX
+from .pypetting_extra.platereader import InfinitePlateReader
+from .pypetting_extra.protocol import Protocol
+from .pypetting_extra.roma import ROMA
+from .pypetting_extra.plate import Plate
+from .pypetting_extra.worktable import Worktable
+from .pypetting_extra.pickolo import Pickolo
 from .worktables.default_worktable import worktable as default_worktable
-from .main.base import rrow_to_row, rwell_to_well, rcol_to_col, well_to_rwell, column_mask
+from .pypetting_extra.base import (
+    rrow_to_row,
+    rwell_to_well,
+    rcol_to_col,
+    well_to_rwell,
+    column_mask,
+)

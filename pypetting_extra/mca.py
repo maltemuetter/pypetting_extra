@@ -55,20 +55,23 @@ class MCA:
         self.tips_mounted = False
         return mca_drop_tips(self.tip_gridsite)
 
-    def aspirate(self, plate, row, col, volume, liquid_class=False):
+    def aspirate(self, plate, row, col, volume, liquid_class=False, waste=False):
         if not liquid_class:
             liquid_class = self.liquid_class
+        if volume > 250:
+            raise Exception("MCA cannot aspirate more than 200ul")
         WL = [
             mca_aspirate(
                 plate.gridsite,
                 row,
                 col,
-                volume + self.extra_vol,
+                volume + self.extra_vol * waste,
                 liquid_class,
                 labware=plate.labware,
             )
         ]
-        WL += self.dispense(plate, row, col, self.extra_vol, liquid_class)
+        if waste:
+            WL += self.dispense(plate, row, col, self.extra_vol, liquid_class)
         return WL
 
     def dispense(self, plate, row, col, volume, liquid_class=False):
@@ -80,6 +83,13 @@ class MCA:
             )
         ]
         return WL
+
+    def mix(self, plate, row, col, volume, cycles, liquid_class=False):
+        wl = []
+        for _ in range(cycles):
+            wl += self.aspirate(plate, row, col, volume, liquid_class=liquid_class)
+            wl += self.dispense(plate, row, col, volume, liquid_class=liquid_class)
+        return wl
 
     def replicate_with_pintool(self, source, destination, n=2, dip_speed=30):
         WL = self.dip(source, n=n, dip_speed=dip_speed) + self.dip(

@@ -18,18 +18,29 @@ class ROMA:
     def add_pickolo(self, pickolo):
         self.pickolo = pickolo
 
-    def instert_plate_to_reader(self, plate, new_lid_gridsite=None, end_with_covered_plate=True):
+    def instert_plate_to_reader(
+        self, plate, new_lid_gridsite=None, end_with_covered_plate=True
+    ):
         WL = []
-        WL.append(self.plate_reader.open())
-        WL += self.move_plate(plate, self.plate_reader.gridsite, new_lid_gridsite=new_lid_gridsite,
-                              end_with_covered_plate=end_with_covered_plate)
+        if not self.plate_reader.is_open:
+            WL.append(self.plate_reader.open())
+        WL += self.move_plate(
+            plate,
+            self.plate_reader.gridsite,
+            new_lid_gridsite=new_lid_gridsite,
+            end_with_covered_plate=end_with_covered_plate,
+        )
         WL.append(self.plate_reader.close())
         plate.toggle_in_plate_reader()
         return WL
 
     def move_plate_to_photo_gridsite(self, plate, new_lid_gridsite):
-        return self.move_plate(plate, self.pickolo.gridsite, new_lid_gridsite=new_lid_gridsite,
-                               end_with_covered_plate=False)
+        return self.move_plate(
+            plate,
+            self.pickolo.gridsite,
+            new_lid_gridsite=new_lid_gridsite,
+            end_with_covered_plate=False,
+        )
 
     def incubate(self, plate):
         WL = self.move_plate(plate, self.incubator.gridsite)
@@ -40,7 +51,9 @@ class ROMA:
         WL = self.move_plate(plate, plate.store_pos)
         return WL
 
-    def move_plate(self, plate, dest, new_lid_gridsite=None, end_with_covered_plate=True):
+    def move_plate(
+        self, plate, dest, new_lid_gridsite=None, end_with_covered_plate=True
+    ):
         WL = []
         if plate.incubating:
             WL.append(self.incubator.present(plate))
@@ -60,14 +73,16 @@ class ROMA:
                 WL.append(transfer_labware(src, dest, labw))
             else:  # close plate and move
                 lid = plate.lid_gridsite
-                WL.append(transfer_labware(
-                    src, dest, labw, cover=True, lid=plate.lid_gridsite))
+                WL.append(
+                    transfer_labware(
+                        src, dest, labw, cover=True, lid=plate.lid_gridsite
+                    )
+                )
             plate.update_lid_gridsite(dest)
         else:
             if plate.covered:  # open plate and move
                 plate.lid_gridsite = lid = new_lid_gridsite
-                WL.append(transfer_labware(
-                    src, dest, labw, cover=False, lid=lid))
+                WL.append(transfer_labware(src, dest, labw, cover=False, lid=lid))
                 plate.update_lid_gridsite(new_lid_gridsite)
             else:  # move open plate
                 WL.append(transfer_labware(src, dest, labw))

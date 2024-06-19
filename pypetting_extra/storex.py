@@ -67,4 +67,4 @@ class StoreX:
 
     def replace_cartridge(self, cart_num, capacity):
         cart_idx = cart_num - 1
-        self.cartridges[cart_idx] = self.make_cartridge(cart_idx, capacity)
+        self.cartridges[cart_idx] = self.make_cartridge(cart_num, capacity)
