@@ -3,6 +3,7 @@ import numpy as np
 from pypetting import aspirate, dispense, wash, move_liha, GridSite
 import math
 from numpy.typing import ArrayLike
+from icecream import ic
 
 
 class LiHA:
@@ -121,6 +122,19 @@ class LiHA:
             )
         ]
 
+    def setup_wash(self, ethanol1, ethanol2, water):
+        self.ethanol1 = ethanol1
+        self.ethanol2 = ethanol2
+        self.water = water
+
+    def sterile_wash(self):
+        WL = [wash(1, 0.3, 31)]
+        WL += self.mix(self.ethanol1, 1, 300, 2, 8 * [True], check_vol=False)
+        WL += [wash(2, 1, 31)]
+        WL += self.mix(self.ethanol2, 1, 400, 2, 8 * [True], check_vol=False)
+        WL += self.mix(self.water, 1, 400, 1, 8 * [True], check_vol=False)
+        return WL
+
     def simple_wash(self):
         h2o2 = GridSite(30, 1, "")
         ethanol = GridSite(30, 2, "")
@@ -221,7 +235,8 @@ class LiHA:
         cycles,
         column_mask,
         tip_array=8 * [True],
-        liquid_class="Minimal FD mix",
+        liquid_class="LB CD ZMAX FAST",
+        check_vol=True,
     ):
         worklist = []
         for _ in range(cycles):
@@ -234,6 +249,7 @@ class LiHA:
                 liquid_class=liquid_class,
                 waste_volume=0,
                 retract=False,
+                check_vol=check_vol,
             )
             worklist += self.dispense(
                 plate,
@@ -251,14 +267,14 @@ class LiHA:
         src_col,
         dest_plate,
         dest_col,
-        tip_vol,
+        transfer_vol,
         column_mask,
         liquid_class="Minimal CD ZMAX",
         tip_array=8 * [True],
     ):
-        n = math.ceil(tip_vol / self.tip_vol_max)
+        n = math.ceil(transfer_vol / self.tip_vol_max)
         wl = []
-        rest_vol = tip_vol
+        rest_vol = transfer_vol
         for _ in range(n):
             vol = min(rest_vol, self.tip_vol_max)
             wl.extend(
@@ -296,21 +312,14 @@ class LiHA:
         tip_array=8 * [True],
         dilution_factor=10,
         liquid_class="LB CD ZMAX FAST",
-        liquid_class_asp="LB CD ZMAX FAST",
     ):
-        mix_volume = 0.6 * well_volume
+        mix_volume = min(self.tip_vol_max, 0.5 * well_volume)
         transfer_volume = well_volume / dilution_factor
         worklist = []
         for i in range(start_col, stop_at_col):
-            worklist += self.aspirate(
+            worklist += self.vol_transfer(
                 plate,
                 i,
-                transfer_volume,
-                column_mask,
-                liquid_class=liquid_class_asp,
-                tip_array=tip_array,
-            )
-            worklist += self.dispense(
                 plate,
                 i + 1,
                 transfer_volume,
@@ -318,6 +327,7 @@ class LiHA:
                 liquid_class=liquid_class,
                 tip_array=tip_array,
             )
+
             worklist += self.mix(
                 plate, i + 1, mix_volume, n_mix, column_mask, tip_array=tip_array
             )
@@ -335,99 +345,68 @@ class LiHA:
         start_col=1,
         end_col=12,
         src_col=1,
+        skip=0,
     ):
-        columns = list(range(start_col, end_col + 1))
+        return self.fill_plate(
+            src_plate,
+            dest_plate,
+            fill_volume,
+            column_mask,
+            column_mask,
+            liquid_class=liquid_class,
+            tip_array=tip_array,
+            start_col=start_col,
+            end_col=end_col,
+            src_col=src_col,
+            skip=skip,
+        )
+
+    def fill_plate(
+        self,
+        src_plate,
+        dest_plate,
+        fill_volume,
+        src_column_mask,
+        dest_column_mask,
+        liquid_class="Minimal FD",
+        tip_array=8 * [True],
+        start_col=1,
+        end_col=12,
+        src_col=1,
+        skip=0,
+    ):
+        columns = list(range(start_col, end_col + 1, 1 + skip))
         wells_per_aspirate = math.floor(self.tip_vol_max / fill_volume)
 
         wl = []
         counter = 0
         for i, dest_col in enumerate(columns):
-            if wells_per_aspirate:
-                if counter == 0:
-                    number_columns_left = len(columns) - i
-                    n_aspirate = min(number_columns_left, wells_per_aspirate)
-                    wl.extend(
-                        self.aspirate(
-                            src_plate,
-                            src_col,
-                            n_aspirate * fill_volume,
-                            column_mask,
-                            liquid_class=liquid_class,
-                            tip_array=tip_array,
-                        )
-                    )
-                    counter = n_aspirate
-
-                wl.extend(
-                    self.dispense(
-                        dest_plate,
-                        dest_col,
-                        fill_volume,
-                        column_mask,
-                        liquid_class=liquid_class,
-                        tip_array=tip_array,
-                    )
-                )
-                counter -= 1
-            else:
-                wl.extend(
-                    self.vol_transfer(
-                        src_plate,
-                        src_col,
-                        dest_plate,
-                        dest_col,
-                        fill_volume,
-                        column_mask,
-                        liquid_class=liquid_class,
-                        tip_array=tip_array,
-                    )
-                )
-
-        return wl
-
-    def fill_384_well_rep(
-        self,
-        src_plate,
-        dest_plate,
-        fill_volume,
-        column_mask_dest,
-        start_col=1,
-        n_cols=12,
-        src_col=1,
-        step=2,
-        column_mask_src=8 * [True],
-        liquid_class="Minimal FD",
-    ):
-        raise Exception("function out of date. fill96 was updated. Finish coding")
-        wl = []
-        nmax = math.floor(self.tip_vol_max / fill_volume)
-        count = 0
-        for i, n in enumerate(range(n_cols)):
-            dest_col = start_col + step * n
-            if count == 0:
-                di = len(range(n_cols)) - i
-
+            if counter == 0:
+                number_columns_left = len(columns) - i
+                n_aspirate = min(number_columns_left, wells_per_aspirate)
                 wl.extend(
                     self.aspirate(
                         src_plate,
                         src_col,
-                        min(di, nmax) * fill_volume,
-                        column_mask_src,
+                        n_aspirate * fill_volume,
+                        src_column_mask,
                         liquid_class=liquid_class,
+                        tip_array=tip_array,
                     )
                 )
-                count = nmax
+                counter = n_aspirate
 
             wl.extend(
                 self.dispense(
                     dest_plate,
                     dest_col,
                     fill_volume,
-                    column_mask_dest,
+                    dest_column_mask,
                     liquid_class=liquid_class,
+                    tip_array=tip_array,
                 )
             )
-            count -= 1
+            counter -= 1
         return wl
 
     def add_pickolo(self, pickolo):

@@ -23,9 +23,9 @@ class PintoolSetup:
         self.dryer = dryer
 
 
-def add_wash_step(self, wash_trough: Device, blot: Device):
-    self.wash_steps.append(wash_trough)
-    self.blot_steps.append(blot)
+#   def add_wash_step(self, wash_trough: Device, blot: Device):
+#       self.wash_steps.append(wash_trough)
+#       self.blot_steps.append(blot)
 
 
 class PintoolDryer:

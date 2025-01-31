@@ -114,7 +114,7 @@ class MCA:
         wl.append(wait_timer(self.timer, dt))
         return wl
 
-    def dry(self, dt=60):
+    def dry_pintool(self, dt=60):
         wl = [self.move(self.pintool_setup.dryer)]
         wl.append(start_timer(self.timer))
         wl.append(self.pintool_setup.dryer.start_dryer())
@@ -122,7 +122,7 @@ class MCA:
         wl.append(self.pintool_setup.dryer.stop_dryer())
         return wl
 
-    def clean_pintool_bleach(self, blot_time=3, dry_time=30):
+    def clean_pintool(self, blot_time=3, dry_time=30):
         setup = self.pintool_setup
         WL = []
         WL += self.dip(setup.bleach_trough)
@@ -131,19 +131,7 @@ class MCA:
         WL += self.blot(setup.water_blot, blot_time)
         WL += self.dip(setup.ethanol_trough)
         WL += self.blot(setup.ethanol_blot, blot_time)
-        WL += self.dry(dt=dry_time)
-        return WL
-
-    def clean_pintool_ethanol(self, blot_time=3, dry_time=30):
-        setup = self.pintool_setup
-        WL = []
-        WL += self.dip(setup.ethanol_trough, wait_time=2)
-        WL += self.blot(setup.ethanol_blot, blot_time)
-        WL += self.dip(setup.water_trough)
-        WL += self.blot(setup.water_blot, blot_time)
-        WL += self.dip(setup.ethanol_trough, wait_time=3)
-        WL += self.blot(setup.ethanol_blot, blot_time)
-        WL += self.dry(dt=dry_time)
+        WL += self.dry_pintool(dt=dry_time)
         return WL
 
     def move(

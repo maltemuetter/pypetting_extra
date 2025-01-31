@@ -19,6 +19,7 @@ worktable.add_carrier("Shelf 8x4Pos", 14, 32)
 worktable.add_carrier("Pintool washstation", 1, 4)
 worktable.add_carrier("MCA96 Diti 4Pos", 8, 4)
 worktable.add_carrier("MCA96 3Pos", 15, 3)
+worktable.add_carrier("Trough 3Pos 25+100ml", 30, 3)
 
 # add devices
 worktable.add_incubator(GridSite(grid=68, site=0, carrier="StoreX 22Pos"))
@@ -26,10 +27,16 @@ worktable.add_plate_reader(GridSite(grid=51, site=0, carrier="Infinite 200"))
 tilter = PlateTilter("1Pos Tilter", 62)
 worktable.add_tilter(tilter)
 
+# Setup liha wash
+trough100 = Labware("Trough 100ml", 8, 1)
+ethanol1 = worktable.carrier["Trough 3Pos 25+100ml"].define_labware(trough100, 0)
+water = worktable.carrier["Trough 3Pos 25+100ml"].define_labware(trough100, 1)
+ethanol2 = worktable.carrier["Trough 3Pos 25+100ml"].define_labware(trough100, 2)
+worktable.setup_liha_wash(ethanol1, ethanol2, water)
+
 # Tips
-tips = worktable.carrier["MCA96 Diti 4Pos"].define_labware(
-    Labware("DiTi 200ul SBS MCA96", 8, 12), 0
-)
+diti = Labware("DiTi 200ul SBS MCA96", 8, 12)
+tips = worktable.carrier["MCA96 Diti 4Pos"].define_labware(diti, 0)
 worktable.add_tips(tips)
 
 # pickolo setup

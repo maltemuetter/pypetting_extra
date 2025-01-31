@@ -22,8 +22,8 @@ class ROMA:
         self, plate, new_lid_gridsite=None, end_with_covered_plate=True
     ):
         WL = []
-        if not self.plate_reader.is_open:
-            WL.append(self.plate_reader.open())
+
+        WL.append(self.plate_reader.open())
         WL += self.move_plate(
             plate,
             self.plate_reader.gridsite,

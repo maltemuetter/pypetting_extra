@@ -21,3 +21,4 @@ from .pypetting_extra.base import (
     well_to_rwell,
     column_mask,
 )
+from .pypetting_extra.labwares import labwares

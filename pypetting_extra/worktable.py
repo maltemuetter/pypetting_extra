@@ -51,3 +51,6 @@ class Worktable:
 
     def assign_pickolo_img_path(self, windows_img_folder_path):
         self.pickolo.set_img_folder(windows_img_folder_path)
+
+    def setup_liha_wash(self, ethanol1, ethanol2, water):
+        self.liha.setup_wash(ethanol1, ethanol2, water)

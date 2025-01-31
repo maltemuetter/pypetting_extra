@@ -6,6 +6,7 @@ from .protocol import Protocol
 from .platereader import Measurement
 from .location import Location
 import pandas as pd
+import sys
 
 
 class Experiment:
@@ -18,6 +19,7 @@ class Experiment:
         clone_src=True,
     ):
 
+        self.check_overwrite(mac_experiment_folder_path, exp_name)
         self.path = mac_experiment_folder_path
         self.windows_path = windows_experiment_folder_path
         self.windows_paths = {"python": windows_python_path}
@@ -34,6 +36,16 @@ class Experiment:
         self.write_folders()
         if clone_src:
             self.clone_src_code()
+
+    @staticmethod
+    def check_overwrite(mac_experiment_folder_path, exp_name):
+        if os.path.exists(os.path.join(mac_experiment_folder_path, exp_name)):
+            overwrite = input(
+                f"The experiment folder {mac_experiment_folder_path} already exists. Do you want to overwrite it? (yes/no): "
+            )
+            if overwrite.lower() != "yes":
+                print("Operation aborted.")
+                sys.exit()
 
     def add_folder(self, key, folder, write=True):
         self.folders.update({key: [self.name, folder]})
@@ -93,11 +105,13 @@ class Experiment:
         script_path = self.windows_paths["cmd_scripts"] + "\\" + script_name
         return Protocol(script_path, logfile_path, self.windows_paths["python"])
 
-    def setup_measurement(self, settings_file_name, folder_key):
+    def setup_measurement(
+        self, settings_file_name, folder_key, xml_folder="reader_settings"
+    ):
         if folder_key not in self.paths.keys():
             self.add_folder(folder_key, folder_key, write=True)
 
-        settings_path = os.path.join(self.paths["reader_settings"], settings_file_name)
+        settings_path = os.path.join(self.paths[xml_folder], settings_file_name)
         output_folder = self.windows_paths[folder_key]
         return Measurement(settings_path, output_folder)
 
