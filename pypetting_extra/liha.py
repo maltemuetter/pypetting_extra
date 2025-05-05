@@ -24,13 +24,22 @@ class LiHA:
         retract=True,
         check_vol=True,
     ):
-        self.column_labware_check(plate, column_mask)
+
         if check_vol:
             if type(volumes) == int:
                 if volumes > 250:
                     raise Exception(
                         f"use liha only for aspirating max 250 ul per tip. volume: {volumes}"
                     )
+
+        if plate.rotated:
+            if plate.labware_rotated is None:
+                raise Exception("Rotated labware not defined.")
+            labware = plate.labware_rotated
+        else:
+            labware = plate.labware
+        self.column_labware_check(labware, column_mask)
+
         wl = [
             aspirate(
                 plate.gridsite,
@@ -38,7 +47,7 @@ class LiHA:
                 list(column_mask),
                 (volumes + waste_volume) * np.array(tip_array),
                 liquid_class,
-                labware=plate.labware,
+                labware=labware,
             )
         ]
 
@@ -50,8 +59,8 @@ class LiHA:
                     column_mask,
                     tip_array=tip_array,
                     local=True,
-                    spacing=plate.labware.spacing,
-                    labware=plate.labware,
+                    spacing=labware.spacing,
+                    labware=labware,
                 )
             ]
         return wl
@@ -66,7 +75,15 @@ class LiHA:
         tip_array=8 * [True],
         retract=True,
     ):
-        self.column_labware_check(plate, column_mask)
+        if plate.rotated:
+            if plate.labware_rotated is None:
+                raise Exception("Rotated labware not defined.")
+            labware = plate.labware_rotated
+        else:
+            labware = plate.labware
+
+        self.column_labware_check(labware, column_mask)
+
         wl = [
             dispense(
                 plate.gridsite,
@@ -74,7 +91,7 @@ class LiHA:
                 list(column_mask),
                 volumes * np.array(tip_array),
                 liquid_class,
-                labware=plate.labware,
+                labware=labware,
             )
         ]
         if retract:
@@ -85,8 +102,8 @@ class LiHA:
                     column_mask,
                     tip_array=tip_array,
                     local=True,
-                    spacing=plate.labware.spacing,
-                    labware=plate.labware,
+                    spacing=labware.spacing,
+                    labware=labware,
                 )
             ]
         return wl
@@ -128,11 +145,13 @@ class LiHA:
         self.water = water
 
     def sterile_wash(self):
-        WL = [wash(1, 0.3, 31)]
+        WL = []
+        WL += [wash(1, 0.3, 31)]
         WL += self.mix(self.ethanol1, 1, 300, 2, 8 * [True], check_vol=False)
         WL += [wash(2, 1, 31)]
         WL += self.mix(self.ethanol2, 1, 400, 2, 8 * [True], check_vol=False)
         WL += self.mix(self.water, 1, 400, 1, 8 * [True], check_vol=False)
+        # print("Sterile wash deactivated for debugging.")
         return WL
 
     def simple_wash(self):
@@ -269,9 +288,12 @@ class LiHA:
         dest_col,
         transfer_vol,
         column_mask,
+        src_column_mask=None,
         liquid_class="Minimal CD ZMAX",
         tip_array=8 * [True],
     ):
+        if not src_column_mask:
+            src_column_mask = column_mask
         n = math.ceil(transfer_vol / self.tip_vol_max)
         wl = []
         rest_vol = transfer_vol
@@ -282,7 +304,7 @@ class LiHA:
                     src_plate,
                     src_col,
                     vol,
-                    column_mask,
+                    src_column_mask,
                     liquid_class=liquid_class,
                     tip_array=tip_array,
                     retract=False,
@@ -331,7 +353,7 @@ class LiHA:
             worklist += self.mix(
                 plate, i + 1, mix_volume, n_mix, column_mask, tip_array=tip_array
             )
-            worklist += self.simple_wash()
+            worklist += self.sterile_wash()
         return worklist
 
     def fill_96_well_plate(
@@ -376,38 +398,58 @@ class LiHA:
         skip=0,
     ):
         columns = list(range(start_col, end_col + 1, 1 + skip))
-        wells_per_aspirate = math.floor(self.tip_vol_max / fill_volume)
-
         wl = []
-        counter = 0
-        for i, dest_col in enumerate(columns):
-            if counter == 0:
-                number_columns_left = len(columns) - i
-                n_aspirate = min(number_columns_left, wells_per_aspirate)
+
+        if fill_volume > self.tip_vol_max:
+            for dest_col in columns:
                 wl.extend(
-                    self.aspirate(
+                    self.vol_transfer(
                         src_plate,
                         src_col,
-                        n_aspirate * fill_volume,
+                        dest_plate,
+                        dest_col,
+                        fill_volume,
                         src_column_mask,
+                        dest_column_mask,
                         liquid_class=liquid_class,
                         tip_array=tip_array,
                     )
                 )
-                counter = n_aspirate
+            return wl
 
-            wl.extend(
-                self.dispense(
-                    dest_plate,
-                    dest_col,
-                    fill_volume,
-                    dest_column_mask,
-                    liquid_class=liquid_class,
-                    tip_array=tip_array,
+        else:
+            counter = 0
+            wells_per_aspirate = math.floor(self.tip_vol_max / fill_volume)
+            for i, dest_col in enumerate(columns):
+                if counter == 0:
+                    number_columns_left = len(columns) - i
+                    n_aspirate = min(number_columns_left, wells_per_aspirate)
+                    wl.extend(
+                        self.aspirate(
+                            src_plate,
+                            src_col,
+                            n_aspirate * fill_volume,
+                            src_column_mask,
+                            liquid_class=liquid_class,
+                            tip_array=tip_array,
+                        )
+                    )
+                    counter = n_aspirate
+                counter -= 1
+
+                wl.extend(
+                    self.dispense(
+                        dest_plate,
+                        dest_col,
+                        fill_volume,
+                        dest_column_mask,
+                        liquid_class=liquid_class,
+                        tip_array=tip_array,
+                        retract=counter == 0,
+                    )
                 )
-            )
-            counter -= 1
-        return wl
+
+            return wl
 
     def add_pickolo(self, pickolo):
         self.pickolo = pickolo
@@ -443,6 +485,6 @@ class LiHA:
         return wl
 
     @staticmethod
-    def column_labware_check(plate, column_mask):
-        if not len(column_mask) == plate.labware.rows:
+    def column_labware_check(labware, column_mask):
+        if not len(column_mask) == labware.rows:
             Exception("column_mask doesnt fit number of plate rows.")

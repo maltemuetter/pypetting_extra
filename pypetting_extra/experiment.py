@@ -17,6 +17,8 @@ class Experiment:
         windows_experiment_folder_path,
         windows_python_path="C:\\Users\\COMPUTER\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
         clone_src=True,
+        default_folders=["notes", "worklists"],
+        default_keys=["notes", "wl"],
     ):
 
         self.check_overwrite(mac_experiment_folder_path, exp_name)
@@ -25,15 +27,18 @@ class Experiment:
         self.windows_paths = {"python": windows_python_path}
         self.name = exp_name
 
+        # mk base folder
         self.folders = {
             "exp": [exp_name],
-            "notes": [exp_name, "notes"],
-            "wl": [exp_name, "worklists"],
         }
-
         self.make_paths()
         self.make_windows_paths()
         self.write_folders()
+
+        # mk sub folders
+        for folder, key in zip(default_folders, default_keys):
+            self.add_folder(key, folder, write=False)
+
         if clone_src:
             self.clone_src_code()
 
@@ -93,15 +98,20 @@ class Experiment:
             + ',0,"py_return",2);'
         )
 
-    def setup_worklist(self, name, protocol=None):
-        return Worklist(os.path.join(self.paths["wl"], name), protocol=protocol)
+    def setup_worklist(self, name, protocol=None, folder_name="worklists", key="wl"):
+        if not self.exist(folder_name):
+            print(f"folder {folder_name} newly created")
+            self.add_folder(key, folder_name)
+        return Worklist(os.path.join(self.paths[key], name), protocol=protocol)
 
     def setup_pickolo_folder(self, folder_key, folder_name, liha):
         self.add_folder(folder_key, folder_name, write=True)
         liha.pickolo.set_img_folder(self.windows_paths[folder_key])
 
-    def setup_protocol(self, script_name="time_log.py", file_name="timelog.csv"):
-        logfile_path = self.windows_paths["notes"] + "\\" + file_name
+    def setup_protocol(
+        self, script_name="time_log.py", file_name="timelog.csv", folder_key="notes"
+    ):
+        logfile_path = self.windows_paths[folder_key] + "\\" + file_name
         script_path = self.windows_paths["cmd_scripts"] + "\\" + script_name
         return Protocol(script_path, logfile_path, self.windows_paths["python"])
 
@@ -119,8 +129,8 @@ class Experiment:
         filepath = os.path.join(self.paths[folderkey], filename)
         return Location(filepath)
 
-    def save_csv(self, df: pd.DataFrame, filename, folder="notes"):
-        filepath = os.path.join(self.paths[folder], filename)
+    def save_csv(self, df: pd.DataFrame, filename, folder_key="notes"):
+        filepath = os.path.join(self.paths[folder_key], filename)
         df.to_csv(filepath, index=False)
 
     def clone_folder(self, foldername: str):
@@ -160,3 +170,8 @@ class Experiment:
         file_path = os.path.join(self.paths.get("evoscripts"), "path.txt")
         with open(file_path, "w") as file:
             file.write(self.windows_paths["exp"] + "\\")
+
+    def exist(self, folder, path=None):
+        if not path:
+            path = self.paths["exp"]
+        return os.path.exists(os.path.join(path, folder))

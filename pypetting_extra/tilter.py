@@ -1,11 +1,19 @@
 from .base import direct_command
+from .container import ContainerMixin
 from pypetting import wait_timer, start_timer, GridSite
+from .sites import Site
 
 
-class PlateTilter:
-    def __init__(self, name, grid):
+class PlateTilter(ContainerMixin):
+    def __init__(self, name, grid, number_of_sites=1):
         self.name = name
         self.grid = grid
+        self.sites = []
+        self.create_sites(number_of_sites)
+
+    def create_sites(self, number_of_sites):
+        for i in range(number_of_sites):
+            self.sites.append(Site(self.grid, self.name, i))
 
     def gridsite(self, site):
         return GridSite(grid=self.grid, carrier=self.name, site=site)

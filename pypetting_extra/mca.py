@@ -55,7 +55,9 @@ class MCA:
         self.tips_mounted = False
         return mca_drop_tips(self.tip_gridsite)
 
-    def aspirate(self, plate, row, col, volume, liquid_class=False, waste=False):
+    def aspirate(
+        self, plate, row, col, volume, liquid_class=False, waste=False, retract=False
+    ):
         if not liquid_class:
             liquid_class = self.liquid_class
         if volume > 250:
@@ -72,9 +74,14 @@ class MCA:
         ]
         if waste:
             WL += self.dispense(plate, row, col, self.extra_vol, liquid_class)
+
+        if retract:
+            WL += [
+                self.move(plate, col, row, local=True),
+            ]
         return WL
 
-    def dispense(self, plate, row, col, volume, liquid_class=False):
+    def dispense(self, plate, row, col, volume, liquid_class=False, retract=True):
         if not liquid_class:
             liquid_class = self.liquid_class
         WL = [
@@ -82,6 +89,10 @@ class MCA:
                 plate.gridsite, row, col, volume, liquid_class, labware=plate.labware
             )
         ]
+        if retract:
+            WL += [
+                self.move(plate, col, row, local=True),
+            ]
         return WL
 
     def mix(self, plate, row, col, volume, cycles, liquid_class=False):
@@ -173,7 +184,7 @@ class MCA:
         return wl
 
     def fill_384plate(
-        self, src, dest, volume, tip_idx=0, liquid_class=False, get_tips=True
+        self, src, dest, volume, tip_idx=0, liquid_class="Minimal FD", get_tips=True
     ):
         wl = []
         if get_tips and not self.tips_mounted:
@@ -182,6 +193,7 @@ class MCA:
         for row, col in product([1, 2], [1, 2]):
             wl.extend(self.aspirate(src, row, col, volume, liquid_class=liquid_class))
             wl.extend(self.dispense(dest, row, col, volume, liquid_class=liquid_class))
+
         if get_tips:
             wl.append(self.return_tips())
         return wl

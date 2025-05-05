@@ -52,7 +52,12 @@ class ROMA:
         return WL
 
     def move_plate(
-        self, plate, dest, new_lid_gridsite=None, end_with_covered_plate=True
+        self,
+        plate,
+        dest,
+        new_lid_gridsite=None,
+        end_with_covered_plate=True,
+        dest_rotated=False,
     ):
         WL = []
         if plate.incubating:
@@ -88,6 +93,8 @@ class ROMA:
                 WL.append(transfer_labware(src, dest, labw))
 
         plate.update_gridsite(dest)
+        # ideally make this later a property of the gridsite
+        plate.update_rotation(dest_rotated)
         plate.covered = plate.gridsite == plate.lid_gridsite
 
         if close_reader:

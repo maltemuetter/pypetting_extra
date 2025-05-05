@@ -9,6 +9,7 @@ class Device:
     labware: Labware
     gridsite: GridSite
     name: str = field(init=False)  # Declare name but disable its initialization
+    rotated: bool = False
 
     def __post_init__(self):
         object.__setattr__(self, "name", self.labware.name)
@@ -47,9 +48,9 @@ class ContainerMixin:
     def site(self, site_idx):
         return self.sites[site_idx]
 
-    def define_labware(self, labware, site):
+    def define_labware(self, labware, site, rotated=False):
         gridsite = GridSite(grid=self.grid, carrier=self.name, site=site)
-        return Device(labware=labware, gridsite=gridsite)
+        return Device(labware=labware, gridsite=gridsite, rotated=rotated)
 
 
 class Carrier(ContainerMixin):
