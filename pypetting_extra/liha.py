@@ -396,60 +396,108 @@ class LiHA:
         end_col=12,
         src_col=1,
         skip=0,
+        reverse_order=False,
+        allow_multidispense=False,
     ):
         columns = list(range(start_col, end_col + 1, 1 + skip))
-        wl = []
+        if reverse_order:
+            columns = columns[::-1]
+        if fill_volume > self.tip_vol_max or allow_multidispense:
+            return self._fill_one_by_one(
+                src_plate,
+                dest_plate,
+                fill_volume,
+                src_column_mask,
+                dest_column_mask,
+                liquid_class,
+                tip_array,
+                columns,
+                src_col,
+            )
+        return self._fill_bulk(
+            src_plate,
+            dest_plate,
+            fill_volume,
+            src_column_mask,
+            dest_column_mask,
+            liquid_class,
+            tip_array,
+            columns,
+            src_col,
+        )
 
-        if fill_volume > self.tip_vol_max:
-            for dest_col in columns:
+    def _fill_one_by_one(
+        self,
+        src_plate,
+        dest_plate,
+        fill_volume,
+        src_column_mask,
+        dest_column_mask,
+        liquid_class,
+        tip_array,
+        columns,
+        src_col,
+    ):
+        wl = []
+        for dest_col in columns:
+            wl.extend(
+                self.vol_transfer(
+                    src_plate,
+                    src_col,
+                    dest_plate,
+                    dest_col,
+                    fill_volume,
+                    src_column_mask,
+                    dest_column_mask,
+                    liquid_class=liquid_class,
+                    tip_array=tip_array,
+                )
+            )
+        return wl
+
+    def _fill_bulk(
+        self,
+        src_plate,
+        dest_plate,
+        fill_volume,
+        src_column_mask,
+        dest_column_mask,
+        liquid_class,
+        tip_array,
+        columns,
+        src_col,
+    ):
+        wl = []
+        counter = 0
+        wells_per_aspirate = math.floor(self.tip_vol_max / fill_volume)
+        for i, dest_col in enumerate(columns):
+            if counter == 0:
+                remaining = len(columns) - i
+                n = min(remaining, wells_per_aspirate)
                 wl.extend(
-                    self.vol_transfer(
+                    self.aspirate(
                         src_plate,
                         src_col,
-                        dest_plate,
-                        dest_col,
-                        fill_volume,
+                        n * fill_volume,
                         src_column_mask,
-                        dest_column_mask,
                         liquid_class=liquid_class,
                         tip_array=tip_array,
                     )
                 )
-            return wl
-
-        else:
-            counter = 0
-            wells_per_aspirate = math.floor(self.tip_vol_max / fill_volume)
-            for i, dest_col in enumerate(columns):
-                if counter == 0:
-                    number_columns_left = len(columns) - i
-                    n_aspirate = min(number_columns_left, wells_per_aspirate)
-                    wl.extend(
-                        self.aspirate(
-                            src_plate,
-                            src_col,
-                            n_aspirate * fill_volume,
-                            src_column_mask,
-                            liquid_class=liquid_class,
-                            tip_array=tip_array,
-                        )
-                    )
-                    counter = n_aspirate
-                counter -= 1
-
-                wl.extend(
-                    self.dispense(
-                        dest_plate,
-                        dest_col,
-                        fill_volume,
-                        dest_column_mask,
-                        liquid_class=liquid_class,
-                        tip_array=tip_array,
-                        retract=counter == 0,
-                    )
+                counter = n
+            counter -= 1
+            wl.extend(
+                self.dispense(
+                    dest_plate,
+                    dest_col,
+                    fill_volume,
+                    dest_column_mask,
+                    liquid_class=liquid_class,
+                    tip_array=tip_array,
+                    retract=counter == 0,
                 )
-
-            return wl
+            )
+        return wl
 
     def add_pickolo(self, pickolo):
         self.pickolo = pickolo
