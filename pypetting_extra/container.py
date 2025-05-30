@@ -17,14 +17,12 @@ class Device:
 
 class ContainerMixin:
     def define_plate(
-        self, name: str, labware: Labware, site_idx: int, is_store_pos=False
+        self, name: str, labware: Labware, site_idx: int, is_store_pos=True
     ):
         site = self.site(site_idx)
         return site.define_plate(name, labware, is_store_pos=is_store_pos)
 
-    def define_plate_on_free_site(
-        self, name: str, labware: Labware, is_store_pos=False
-    ):
+    def define_plate_on_free_site(self, name: str, labware: Labware, is_store_pos=True):
         site = self.get_next_free_site()
         return site.define_plate(name, labware, is_store_pos=is_store_pos)
 

@@ -184,7 +184,14 @@ class MCA:
         return wl
 
     def fill_384plate(
-        self, src, dest, volume, tip_idx=0, liquid_class="Minimal FD", get_tips=True
+        self,
+        src,
+        dest,
+        volume,
+        tip_idx=0,
+        liquid_class="Minimal FD",
+        get_tips=True,
+        protocol=False,
     ):
         wl = []
         if get_tips and not self.tips_mounted:
@@ -193,6 +200,8 @@ class MCA:
         for row, col in product([1, 2], [1, 2]):
             wl.extend(self.aspirate(src, row, col, volume, liquid_class=liquid_class))
             wl.extend(self.dispense(dest, row, col, volume, liquid_class=liquid_class))
+            if protocol:
+                wl.append(protocol.log_entry(f"Filled_{dest.name}_r{row}_c{col})"))
 
         if get_tips:
             wl.append(self.return_tips())

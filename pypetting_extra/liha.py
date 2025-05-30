@@ -291,8 +291,9 @@ class LiHA:
         src_column_mask=None,
         liquid_class="Minimal CD ZMAX",
         tip_array=8 * [True],
+        retract=True,
     ):
-        if not src_column_mask:
+        if src_column_mask is None:
             src_column_mask = column_mask
         n = math.ceil(transfer_vol / self.tip_vol_max)
         wl = []
@@ -318,6 +319,7 @@ class LiHA:
                     column_mask,
                     liquid_class=liquid_class,
                     tip_array=tip_array,
+                    retract=retract,
                 )
             )
             rest_vol = rest_vol - vol
@@ -402,7 +404,7 @@ class LiHA:
         columns = list(range(start_col, end_col + 1, 1 + skip))
         if reverse_order:
             columns = columns[::-1]
-        if fill_volume > self.tip_vol_max or allow_multidispense:
+        if fill_volume > self.tip_vol_max or not allow_multidispense:
             return self._fill_one_by_one(
                 src_plate,
                 dest_plate,
@@ -447,10 +449,11 @@ class LiHA:
                     dest_plate,
                     dest_col,
                     fill_volume,
-                    src_column_mask,
                     dest_column_mask,
+                    src_column_mask=src_column_mask,
                     liquid_class=liquid_class,
                     tip_array=tip_array,
+                    retract=dest_col == columns[-1],
                 )
             )
         return wl
