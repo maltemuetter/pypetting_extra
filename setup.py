@@ -8,7 +8,7 @@ setup(
     description="This package builds on the pypetting package and facilitates convinent handling of the Evo 200 automated liquid handling system (Tecan)",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/your_repo",
+    url="https://github.com/maltemuetter/pypetting_extra",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

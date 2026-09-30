@@ -11,10 +11,6 @@ pyenv virtualenv $PYTHON_VERSION $ENV_NAME
 pyenv local $ENV_NAME
 
 # Install packages (add your packages here)
-pip install git+https://github.com/sirno/pypetting.git@main
-pip install numpy pandas
-
-# Generate the requirements.txt file
-pip freeze > requirements.txt
+pip install -r requirements.txt
 
 echo "Virtual environment '$ENV_NAME' created and configured."
