@@ -1,4 +1,9 @@
-from pypetting_extra import ROMA, LiHA, MCA, InfinitePlateReader, StoreX, Carrier
+from .roma import ROMA
+from .liha import LiHA
+from .mca import MCA
+from .platereader import InfinitePlateReader
+from .storex import StoreX
+from .container import Carrier
 from pypetting import GridSite
 
 

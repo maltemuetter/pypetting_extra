@@ -23,8 +23,9 @@ positions and actions instead of raw commands.
 from pypetting_extra import Experiment
 from pypetting_extra import default_worktable as worktable
 from pypetting.labware import labwares
+from config import LOCAL_SHARED_FOLDER, ROBOT_SHARED_FOLDER
 
-experiment = Experiment("test1", local_path, robot_path)
+experiment = Experiment("test1", LOCAL_SHARED_FOLDER, ROBOT_SHARED_FOLDER)
 protocol = experiment.setup_protocol()
 
 shelf = worktable.carrier["Shelf 8x4Pos"]
@@ -41,11 +42,11 @@ A full example is in `example/test_main.py`.
 ## Installation
 
 ```bash
-git clone https://github.com/maltemuetter/pypetting_extra.git
-pip install -r pypetting_extra/requirements.txt
+pip install git+https://github.com/maltemuetter/pypetting_extra.git
 ```
 
-Put the folder that contains `pypetting_extra/` on your Python path.
+To run the examples, set the two shared folders in `example/config.py`: the
+folder as seen from your computer and as seen from the robot computer.
 
 ## Context
 
@@ -54,4 +55,4 @@ experiments on an automated lab platform.
 
 ## License
 
-MIT, see `LICENSE.md`.
+MIT, see `LICENSE`.

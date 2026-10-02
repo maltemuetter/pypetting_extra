@@ -1,4 +1,4 @@
-from pypetting_extra import (
+from .. import (
     PintoolDryer,
     PintoolSetup,
     Worktable,

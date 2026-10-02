@@ -1,15 +1,16 @@
 from pypetting_extra import Experiment
 from pypetting_extra import default_worktable as worktable
 from pypetting.labware import labwares
+from config import LOCAL_SHARED_FOLDER, ROBOT_SHARED_FOLDER
 
 # Soft Setup
 folder = "test_experiments"
 exp_name = "test1"
-exp_path = "/Users/malte/polybox/Shared/Robot-Shared/" + folder
+exp_path = LOCAL_SHARED_FOLDER + folder
 experiment = Experiment(
     exp_name,
     exp_path,
-    "C:\\Users\\COMPUTER\\polybox\\Robot-Shared\\" + folder,
+    ROBOT_SHARED_FOLDER + folder,
 )
 experiment.clone_folder("cmd_scripts")
 protocol = experiment.setup_protocol()

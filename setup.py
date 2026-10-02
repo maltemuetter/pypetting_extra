@@ -16,5 +16,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.9",
-    install_requires=["pypetting>=0.7.0", "pandas>=2.1.4", "numpy>=1.26.4"],
+    install_requires=["pypetting>=0.7.0", "pandas>=2.1.4", "numpy>=1.26.4", "icecream"],
 )

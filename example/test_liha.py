@@ -1,6 +1,7 @@
 from pypetting_extra import default_worktable, Experiment
 from pypetting.labware import labwares
 from pypetting import Labware
+from config import LOCAL_SHARED_FOLDER, ROBOT_SHARED_FOLDER
 
 
 mp3pos = default_worktable.carrier["MP 3Pos Fixed"]
@@ -10,11 +11,11 @@ pbs_trough = default_worktable.carrier["MP 3Pos Deck"].define_plate(
 )
 
 folder = "test_pypetting_extra"
-exp_path = "/Users/malte/polybox/Shared/Robot-Shared/" + folder
+exp_path = LOCAL_SHARED_FOLDER + folder
 experiment = Experiment(
     "test",
     exp_path,
-    "C:\\Users\\COMPUTER\\polybox\\Robot-Shared\\" + folder,
+    ROBOT_SHARED_FOLDER + folder,
 )
 
 
