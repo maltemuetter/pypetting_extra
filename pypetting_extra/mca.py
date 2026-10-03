@@ -102,16 +102,20 @@ class MCA:
             wl += self.dispense(plate, row, col, volume, liquid_class=liquid_class)
         return wl
 
-    def replicate_with_pintool(self, source, destination, n=2, dip_speed=30):
-        WL = self.dip(source, n=n, dip_speed=dip_speed) + self.dip(
-            destination, n=n, dip_speed=dip_speed
-        )
+    def replicate_with_pintool(
+        self, source, destination, n=2, dip_speed=30, dip_offset=0
+    ):
+        WL = self.dip(
+            source, n=n, dip_speed=dip_speed, dip_offset=dip_offset
+        ) + self.dip(destination, n=n, dip_speed=dip_speed, dip_offset=dip_offset)
         return WL
 
-    def dip(self, plate, n=2, dip_speed=60, wait_time=1):
+    def dip(self, plate, n=2, dip_speed=60, wait_time=1, dip_offset=0):
         wl = [self.move(plate)]
-        for _ in range(n - 1):
-            wl.append(self.move(plate, z_pos=3, speed=dip_speed, local=4))
+        for _ in range(n):
+            wl.append(
+                self.move(plate, z_pos=3, speed=dip_speed, offset=dip_offset, local=4)
+            )
             wl.append(start_timer(self.timer))
             wl.append(wait_timer(self.timer, wait_time))
             wl.append(self.move(plate, z_pos=2, speed=dip_speed, local=4))
@@ -153,6 +157,7 @@ class MCA:
         z_pos: int = 0,
         speed: int = 10,
         local: int = 0,
+        offset: int = 0,
     ):
         labware = plate.labware
         spacing = labware.spacing
@@ -166,7 +171,7 @@ class MCA:
                 f'{spacing},"'
             ).encode()
             + _mca_well_select(row, col, labware)
-            + (f'",{local},{z_pos},0,{speed},0,0);').encode()
+            + (f'",{local},{z_pos},{offset},{speed},0,0);').encode()
         )
         return command
 
@@ -191,20 +196,35 @@ class MCA:
         tip_idx=0,
         liquid_class="Minimal FD",
         get_tips=True,
-        protocol=False,
     ):
         wl = []
         if get_tips and not self.tips_mounted:
             wl.append(self.get_tips(tip_idx=tip_idx))
 
         for row, col in product([1, 2], [1, 2]):
-            wl.extend(self.aspirate(src, row, col, volume, liquid_class=liquid_class))
-            wl.extend(self.dispense(dest, row, col, volume, liquid_class=liquid_class))
-            if protocol:
-                wl.append(protocol.log_entry(f"Filled_{dest.name}_r{row}_c{col})"))
-
+            wl.extend(
+                self.fill_rep(
+                    src, dest, volume, liquid_class=liquid_class, row=row, col=col
+                )
+            )
         if get_tips:
             wl.append(self.return_tips())
+        return wl
+
+    def fill_rep(
+        self,
+        src,
+        dest,
+        volume,
+        liquid_class="Minimal FD",
+        row=1,
+        col=1,
+    ):
+        wl = []
+
+        wl.extend(self.aspirate(src, row, col, volume, liquid_class=liquid_class))
+        wl.extend(self.dispense(dest, row, col, volume, liquid_class=liquid_class))
+
         return wl
 
 
