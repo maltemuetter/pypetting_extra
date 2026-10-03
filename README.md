@@ -45,6 +45,9 @@ A full example is in `example/test_main.py`.
 pip install git+https://github.com/maltemuetter/pypetting_extra.git
 ```
 
+This also installs pypetting from GitHub, because the release on PyPI is
+older and lacks functions this package uses.
+
 To run the examples, set the two shared folders in `example/config.py`: the
 folder as seen from your computer and as seen from the robot computer.
 

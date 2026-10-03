@@ -16,5 +16,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.9",
-    install_requires=["pypetting>=0.7.0", "pandas>=2.1.4", "numpy>=1.26.4", "icecream"],
+    install_requires=["pypetting @ git+https://github.com/sirno/pypetting.git@9f3da224318bfe34928f9b05706bc6cee5f4ca99", "pandas>=2.1.4", "numpy>=1.26.4", "icecream"],
 )
