@@ -6,7 +6,7 @@ from config import LOCAL_SHARED_FOLDER, ROBOT_SHARED_FOLDER
 
 mp3pos = default_worktable.carrier["MP 3Pos Fixed"]
 liha = default_worktable.liha
-pbs_trough = default_worktable.carrier["MP 3Pos Deck"].define_plate(
+pbs_trough = default_worktable.carrier["MCA96 3Pos"].define_plate(
     "PBS", Labware("Trough 300ml MCA", 8, 12), 2
 )
 

@@ -14,12 +14,12 @@ worktable = Worktable()
 # carrier
 worktable.add_carrier("MP 2Pos Fixed", 33, 2)
 worktable.add_carrier("MP 3Pos Fixed", 40, 3)
-worktable.add_carrier("MP 3Pos Deck", 22, 3)
 worktable.add_carrier("Shelf 8x4Pos", 14, 32)
 worktable.add_carrier("Pintool washstation", 1, 4)
 worktable.add_carrier("MCA96 Diti 4Pos", 8, 4)
 worktable.add_carrier("MCA96 3Pos", 15, 3)
 worktable.add_carrier("Trough 3Pos 25+100ml", 30, 3)
+worktable.add_carrier("Te-Shake", 34, 1)
 
 # add devices
 worktable.add_incubator(GridSite(grid=68, site=0, carrier="StoreX 22Pos"))
